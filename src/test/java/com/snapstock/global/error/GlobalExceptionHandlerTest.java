@@ -2,6 +2,7 @@ package com.snapstock.global.error;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,28 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.errorCode").value("INTERNAL_ERROR"));
     }
 
+    @Test
+    @DisplayName("민감 필드(password) 검증 실패 시 value가 마스킹된다")
+    void Validation_민감필드_password_마스킹() throws Exception {
+        mockMvc.perform(post("/test/validation-sensitive")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"test\",\"password\":\"ab\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("password"))
+                .andExpect(jsonPath("$.fieldErrors[0].value").value("[REDACTED]"));
+    }
+
+    @Test
+    @DisplayName("일반 필드 검증 실패 시 value가 그대로 노출된다")
+    void Validation_일반필드_value_노출() throws Exception {
+        mockMvc.perform(post("/test/validation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
+                .andExpect(jsonPath("$.fieldErrors[0].value").value(""));
+    }
+
     @RestController
     @RequestMapping("/test")
     static class TestController {
@@ -76,6 +99,10 @@ class GlobalExceptionHandlerTest {
         void validateRequest(@Valid @RequestBody TestRequest request) {
         }
 
+        @PostMapping("/validation-sensitive")
+        void validateSensitiveRequest(@Valid @RequestBody SensitiveRequest request) {
+        }
+
         @GetMapping("/unexpected")
         void throwUnexpectedException() {
             throw new RuntimeException("unexpected error");
@@ -83,5 +110,11 @@ class GlobalExceptionHandlerTest {
     }
 
     record TestRequest(@NotBlank String name) {
+    }
+
+    record SensitiveRequest(
+            @NotBlank String name,
+            @Size(min = 8, max = 20) String password
+    ) {
     }
 }
