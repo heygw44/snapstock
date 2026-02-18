@@ -36,17 +36,25 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ApiResponse<Void>> handleValidationException(
             MethodArgumentNotValidException e) {
         log.warn("Validation exception: {}", e.getMessage());
-        List<FieldErrorResponse> fieldErrors = e.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(error -> new FieldErrorResponse(
-                        error.getField(),
-                        sanitizeValue(error),
-                        error.getDefaultMessage()))
-                .toList();
+        List<FieldErrorResponse> fieldErrors = toFieldErrors(e);
         return ResponseEntity
                 .badRequest()
                 .body(ApiResponse.validationError(fieldErrors));
+    }
+
+    private List<FieldErrorResponse> toFieldErrors(MethodArgumentNotValidException e) {
+        return e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(this::toFieldErrorResponse)
+                .toList();
+    }
+
+    private FieldErrorResponse toFieldErrorResponse(FieldError error) {
+        return new FieldErrorResponse(
+                error.getField(),
+                sanitizeValue(error),
+                error.getDefaultMessage());
     }
 
     @ExceptionHandler(Exception.class)
