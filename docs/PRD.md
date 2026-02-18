@@ -4,13 +4,13 @@
 
 | 항목 | 내용 |
 |---|---|
-| **문서 버전** | v3.0.0 |
+| **문서 버전** | v3.4.0 |
 | **작성자** | heygw44 |
 | **작성일** | 2026-02-18 |
 | **최종 수정일** | 2026-02-18 |
-| **상태** | Draft |
+| **상태** | Ready for Implementation (Backend API Scope) |
 | **프로젝트 유형** | 개인 포트폴리오 (백엔드 1인 개발) |
-| **레포지토리** | TBD |
+| **레포지토리** | local git repository (`snapstock`, GitHub remote 연결 전) |
 
 ---
 
@@ -51,7 +51,7 @@ SnapStock은 **한정 시간 내 한정 수량 상품을 파격가에 판매하�
 |---|---|---|
 | **우아한형제들** | 빼빼로데이 선착순 이벤트 장애 회고 | Redis 카운터 + Replication 구조에서 초과 발급 문제 → Master 단일 노드 INCR로 정합성 확보. 본 프로젝트 Redis Lua Script 설계의 근거 |
 | **우아한형제들** | 배민스토어 이벤트 기반 아키텍처 | Kafka + DynamoDB + Redis 조합, Zero Payload 방식 이벤트 → 본 프로젝트의 `ApplicationEvent` 기반 느슨한 결합 설계 및 향후 Kafka 전환 인터페이스 추상화 근거 |
-| **여기어때** | Redis & Kafka를 활용한 선착순 쿠폰 이벤트 | Redis INCR로 동시성 해결 + Kafka로 DB Write 분리 → Write DB 부하 격리 패턴. 본 프로젝트 Phase 4 Redis 재고 차감 + 비동기 주문 저장 설계 근거 |
+| **여기어때** | Redis & Kafka를 활용한 선착순 쿠폰 이벤트 | Redis INCR로 동시성 해결 + Kafka로 DB Write 분리 → Write DB 부하 격리 패턴. 본 프로젝트는 해당 패턴을 참고하되, API 정합성을 위해 주문 저장은 동기로 처리하고 비동기는 후속 이벤트 처리에만 적용 |
 | **쿠팡** | 대용량 트래픽 처리를 위한 백엔드 전략 | 마이크로서비스별 데이터 분리, Read-through 캐시 + 실시간 스트리밍 캐시 이원화. 재고는 초 단위 실시간 업데이트 필요 → 본 프로젝트 캐싱 전략(일반 데이터 TTL vs 재고 실시간)의 근거 |
 | **토스** | 가장 많은 트래픽을 받는 서비스의 서버 관리 전략 | 모니터링 → 병목 식별 → 최적화 → Canary 배포 이터레이션. Local Cache + 비동기 Flush 패턴 → 본 프로젝트 성능 최적화 사이클 및 모니터링 설계 근거 |
 | **사람인** | ORM 사용 시 HikariCP 장애 회고 | 예상치 못한 대량 쿼리 → Heap OOM → GC STW → 커넥션 타임아웃 연쇄 장애. HikariCP leak detection 설정 → 본 프로젝트 커넥션 풀 설정 및 모니터링 설계 근거 |
@@ -70,7 +70,7 @@ SnapStock은 **한정 시간 내 한정 수량 상품을 파격가에 판매하�
 | **Build** | Gradle (Groovy DSL) | 8.14+ | Spring Boot 3.5 공식 지원 |
 | **ORM** | Spring Data JPA | 2025.0 (managed) | Hibernate 6.6 |
 | **Security** | Spring Security | 6.5 (managed) | JWT 기반 인증/인가 |
-| **Utility** | Lombok | latest | 보일러플레이트 제거 |
+| **Utility** | Lombok | 1.18.x (managed) | 보일러플레이트 제거 |
 
 ### 2.2 Infrastructure
 
@@ -78,7 +78,7 @@ SnapStock은 **한정 시간 내 한정 수량 상품을 파격가에 판매하�
 |---|---|---|---|
 | **Database** | MySQL | 8.4 | 주 데이터 저장소 |
 | **Cache** | Redis | 7.x | 캐싱, Refresh Token 저장, 재고 원자적 차감 |
-| **Containerization** | Docker / Docker Compose | latest | 로컬 개발 환경 + 인프라 구성 |
+| **Containerization** | Docker Engine / Docker Compose | 28.x / v2 | 로컬 개발 환경 + 인프라 구성 |
 | **CI/CD** | GitHub Actions | - | 테스트 → 빌드 → Docker 이미지 |
 
 ### 2.3 Testing
@@ -86,7 +86,7 @@ SnapStock은 **한정 시간 내 한정 수량 상품을 파격가에 판매하�
 | 구분 | 기술 | 용도 |
 |---|---|---|
 | **Unit Test** | JUnit 5 (Jupiter) + AssertJ | 도메인 로직, Service 계층 |
-| **Integration Test** | Testcontainers 1.20.x | MySQL, Redis 실환경 테스트 |
+| **Integration Test** | Testcontainers 1.21.x | MySQL, Redis 실환경 테스트 |
 | **Concurrency Test** | ExecutorService + CountDownLatch | 동시성 정합성 검증 |
 | **Load Test** | k6 | TPS, 응답시간, 에러율 측정 |
 
@@ -94,7 +94,7 @@ SnapStock은 **한정 시간 내 한정 수량 상품을 파격가에 판매하�
 
 | 구분 | 기술 |
 |---|---|
-| **API 문서** | Spring REST Docs 3.0 또는 Springdoc OpenAPI 2.x |
+| **API 문서** | Springdoc OpenAPI 2.x (정본) + Swagger UI / Postman import |
 | **ERD** | dbdiagram.io 또는 IntelliJ Database Tools |
 
 ### 2.5 Spring Boot 3.5.10 선정 근거
@@ -157,9 +157,10 @@ Spring Boot 3.5는 2024년 11월 GA 릴리스되었으며, 2026년 2월 현재 3
 | id | BIGINT | PK, AUTO_INCREMENT | |
 | email | VARCHAR(255) | UNIQUE, NOT NULL | 로그인 식별자 |
 | password | VARCHAR(255) | NOT NULL | BCrypt 암호화 |
-| nickname | VARCHAR(50) | NOT NULL | |
+| nickname | VARCHAR(50) | UNIQUE, NOT NULL | |
 | role | ENUM('USER','ADMIN') | NOT NULL, DEFAULT 'USER' | |
 | created_at | DATETIME(6) | NOT NULL | |
+| updated_at | DATETIME(6) | NOT NULL | |
 | deleted_at | DATETIME(6) | NULLABLE | Soft Delete |
 
 #### products
@@ -174,6 +175,7 @@ Spring Boot 3.5는 2024년 11월 GA 릴리스되었으며, 2026년 2월 현재 3
 | category | VARCHAR(100) | NOT NULL | |
 | created_at | DATETIME(6) | NOT NULL | |
 | updated_at | DATETIME(6) | NOT NULL | |
+| deleted_at | DATETIME(6) | NULLABLE | Soft Delete |
 
 #### time_deals
 
@@ -189,6 +191,7 @@ Spring Boot 3.5는 2024년 11월 GA 릴리스되었으며, 2026년 2월 현재 3
 | status | ENUM('UPCOMING','OPEN','CLOSED') | NOT NULL, DEFAULT 'UPCOMING' | |
 | version | BIGINT | NOT NULL, DEFAULT 0 | 낙관적 락 (@Version) |
 | created_at | DATETIME(6) | NOT NULL | |
+| updated_at | DATETIME(6) | NOT NULL | |
 
 #### orders
 
@@ -203,20 +206,31 @@ Spring Boot 3.5는 2024년 11월 GA 릴리스되었으며, 2026년 2월 현재 3
 | created_at | DATETIME(6) | NOT NULL | |
 | updated_at | DATETIME(6) | NOT NULL | |
 
+> 주문 정책: **유저 1명당 동일 타임딜 1건만 허용** (`UNIQUE (user_id, time_deal_id)`)
+
 ### 3.3 인덱스 설계
 
 ```sql
--- time_deals: 상태별 조회 + 시간순 정렬 (타임딜 목록 API)
+-- time_deals: 상태별 조회 + id 커서 페이지네이션
+CREATE INDEX idx_time_deals_status_id ON time_deals (status, id DESC);
+
+-- time_deals: 스케줄러 상태 전이 (UPCOMING -> OPEN)
 CREATE INDEX idx_time_deals_status_start ON time_deals (status, start_time);
 
--- orders: 유저별 주문 내역 조회
-CREATE INDEX idx_orders_user_created ON orders (user_id, created_at DESC);
+-- time_deals: 스케줄러 상태 전이 (OPEN -> CLOSED)
+CREATE INDEX idx_time_deals_status_end ON time_deals (status, end_time);
+
+-- orders: 유저별 주문 내역 + id 커서 페이지네이션
+CREATE INDEX idx_orders_user_id ON orders (user_id, id DESC);
 
 -- orders: 타임딜별 주문 집계
 CREATE INDEX idx_orders_time_deal_status ON orders (time_deal_id, status);
 
--- products: 카테고리별 상품 목록
-CREATE INDEX idx_products_category ON products (category, created_at DESC);
+-- orders: 1인 1타임딜 주문 강제
+CREATE UNIQUE INDEX ux_orders_user_deal ON orders (user_id, time_deal_id);
+
+-- products: 카테고리별 상품 목록 + id 커서 페이지네이션
+CREATE INDEX idx_products_category_id ON products (category, id DESC);
 ```
 
 ---
@@ -229,8 +243,16 @@ CREATE INDEX idx_products_category ON products (category, created_at DESC);
 |---|---|---|---|
 | POST | `/api/v1/auth/signup` | 회원가입 | - |
 | POST | `/api/v1/auth/login` | 로그인 → Access + Refresh Token 발급 | - |
-| POST | `/api/v1/auth/logout` | 로그아웃 → Refresh Token 블랙리스트 | Bearer |
-| POST | `/api/v1/auth/reissue` | Access Token 재발급 | Refresh |
+| POST | `/api/v1/auth/logout` | 로그아웃 → Refresh Token 삭제 + Access Token 블랙리스트 | Bearer |
+| POST | `/api/v1/auth/reissue` | Access Token 재발급 | Refresh (쿠키/Body) |
+
+#### 4.1.1 인증 전달 정책 (정본)
+
+- 기본 정책(백엔드 API 소비자: Postman/OpenAPI Client/서버 간 호출): Access Token은 `Authorization: Bearer ...`, Refresh Token은 요청/응답 Body(`refreshToken`)로 전달한다.
+- 확장 정책(브라우저/Swagger UI): Refresh Token 쿠키 전달을 허용한다. 쿠키 속성은 `HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth`.
+- `POST /api/v1/auth/reissue`는 `permitAll`로 노출하고, 서비스 레이어에서 Refresh Token 검증 + Redis 일치 확인 + Rotation으로 인증을 완성한다.
+- OpenAPI에는 `bearerAuth`(HTTP bearer)와 `cookieAuth`(apiKey in cookie, `refreshToken`)를 모두 정의한다.
+- `reissue` 입력 우선순위: `body.refreshToken` 우선, body 미존재 시 cookie fallback. 둘 다 없으면 `400 INVALID_INPUT`, 검증 실패 시 `401 INVALID_REFRESH_TOKEN`.
 
 ### 4.2 회원 (User)
 
@@ -246,7 +268,7 @@ CREATE INDEX idx_products_category ON products (category, created_at DESC);
 |---|---|---|---|
 | POST | `/api/v1/admin/products` | 상품 등록 | ADMIN |
 | PATCH | `/api/v1/admin/products/{id}` | 상품 수정 | ADMIN |
-| DELETE | `/api/v1/admin/products/{id}` | 상품 삭제 | ADMIN |
+| DELETE | `/api/v1/admin/products/{id}` | 상품 삭제 (Soft Delete) | ADMIN |
 | GET | `/api/v1/products` | 상품 목록 조회 (검색, 카테고리 필터, 커서 페이지네이션) | - |
 | GET | `/api/v1/products/{id}` | 상품 상세 조회 | - |
 
@@ -265,8 +287,8 @@ CREATE INDEX idx_products_category ON products (category, created_at DESC);
 | Method | Endpoint | 설명 | 인증 |
 |---|---|---|---|
 | **POST** | **`/api/v1/orders`** | **주문 생성 + 재고 차감** ⚡ | **Bearer** |
-| POST | `/api/v1/orders/{id}/pay` | 결제 처리 | Bearer |
-| POST | `/api/v1/orders/{id}/cancel` | 주문 취소 + 재고 복구 | Bearer |
+| POST | `/api/v1/orders/{id}/pay` | 결제 처리 (`Idempotency-Key` 필수) | Bearer |
+| POST | `/api/v1/orders/{id}/cancel` | 주문 취소 + 재고 복구 (`Idempotency-Key` 필수) | Bearer |
 | GET | `/api/v1/orders` | 내 주문 목록 (커서 페이지네이션) | Bearer |
 | GET | `/api/v1/orders/{id}` | 주문 상세 | Bearer |
 
@@ -328,7 +350,7 @@ Content-Type: application/json
 #### GET /api/v1/time-deals — 타임딜 목록 조회
 
 ```
-GET /api/v1/time-deals?status=OPEN&cursor=eyJpZCI6NTB9&size=10
+GET /api/v1/time-deals?status=OPEN&cursor=50&size=10
 ```
 
 **Response — 200 OK**
@@ -350,7 +372,7 @@ GET /api/v1/time-deals?status=OPEN&cursor=eyJpZCI6NTB9&size=10
         "status": "OPEN"
       }
     ],
-    "nextCursor": "eyJpZCI6NDB9",
+    "nextCursor": 40,
     "hasNext": true,
     "size": 10
   }
@@ -367,7 +389,7 @@ GET /api/v1/time-deals?status=OPEN&cursor=eyJpZCI6NTB9&size=10
 }
 ```
 
-**Response — 200 OK**
+**Response — 200 OK (기본: 백엔드 API 클라이언트)**
 ```json
 {
   "status": "SUCCESS",
@@ -380,22 +402,58 @@ GET /api/v1/time-deals?status=OPEN&cursor=eyJpZCI6NTB9&size=10
 }
 ```
 
+- 기본 정책: Refresh Token을 응답 Body에 포함한다 (Postman/OpenAPI Client/서버 간 호출 기준).
+- 확장 정책: 브라우저/Swagger UI 요청에는 `Set-Cookie(HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth)` 전달을 허용한다.
+
+#### POST /api/v1/orders/{id}/pay — 결제 멱등 처리
+
+```
+Authorization: Bearer {accessToken}
+Idempotency-Key: 01H... (UUID/ULID 권장)
+```
+
+- 동일 `Idempotency-Key` 재요청은 **동일 결과를 재응답**한다.
+- 키는 Redis에 `idempotency:{endpoint}:{resourceId}:{userId}:{key}` 패턴으로 저장하며(예: `idempotency:pay:1042:42:01H...`), TTL은 최소 24시간 보관한다. resourceId(orderId)를 포함하여 동일 사용자가 다른 주문에 같은 키를 재사용해도 충돌하지 않도록 한다.
+- `Idempotency-Key` 누락 시 `400 BAD_REQUEST (IDEMPOTENCY_KEY_REQUIRED)`를 반환한다.
+
+#### POST /api/v1/orders/{id}/cancel — 취소 멱등 처리
+
+```
+Authorization: Bearer {accessToken}
+Idempotency-Key: 01H... (UUID/ULID 권장, 필수)
+```
+
+- `CREATED` 또는 `PAID` 상태 주문 모두 취소 가능하다. 취소 시 재고를 복구한다.
+- 이미 취소된 주문 재요청 시 추가 재고 복구는 수행하지 않는다 (멱등).
+- 응답 계약은 `200 OK + 현재 상태(CANCELLED)`로 고정한다.
+- `Idempotency-Key` 누락 시 `400 BAD_REQUEST (IDEMPOTENCY_KEY_REQUIRED)`를 반환한다.
+
 ### 4.7 에러 코드 정의
 
 | HTTP Status | Error Code | 설명 |
 |---|---|---|
 | 400 | `INVALID_INPUT` | 요청 파라미터 유효성 검증 실패 |
+| 400 | `IDEMPOTENCY_KEY_REQUIRED` | 멱등키 필수 API에서 헤더 누락 |
+| 400 | `DEAL_INVALID_TIME` | 타임딜 시간 설정 오류 (startTime ≥ endTime) |
+| 400 | `DEAL_PRICE_TOO_HIGH` | 딜 가격이 원가 이상 |
 | 401 | `UNAUTHORIZED` | 인증 실패 (토큰 누락/만료) |
+| 401 | `LOGIN_FAILED` | 이메일 또는 비밀번호 불일치 |
+| 401 | `INVALID_REFRESH_TOKEN` | Refresh Token 무효 또는 만료 |
+| 401 | `DELETED_USER` | 탈퇴한 계정으로 로그인 시도 |
 | 403 | `FORBIDDEN` | 권한 부족 |
 | 404 | `USER_NOT_FOUND` | 사용자 없음 |
 | 404 | `PRODUCT_NOT_FOUND` | 상품 없음 |
 | 404 | `DEAL_NOT_FOUND` | 타임딜 없음 |
 | 404 | `ORDER_NOT_FOUND` | 주문 없음 |
+| 409 | `DUPLICATE_EMAIL` | 이미 사용 중인 이메일 |
+| 409 | `DUPLICATE_NICKNAME` | 이미 사용 중인 닉네임 |
 | 409 | `DEAL_NOT_OPEN` | 타임딜이 OPEN 상태가 아님 |
+| 409 | `DEAL_NOT_MODIFIABLE` | 현재 상태에서 타임딜 수정 불가 |
 | 409 | `DEAL_STOCK_EXHAUSTED` | 타임딜 재고 소진 |
 | 409 | `DUPLICATE_ORDER` | 동일 타임딜 중복 주문 |
 | 409 | `ORDER_ALREADY_PAID` | 이미 결제 완료된 주문 |
-| 409 | `ORDER_ALREADY_CANCELLED` | 이미 취소된 주문 |
+| 409 | `ORDER_ALREADY_CANCELLED` | 취소된 주문에 결제 시도 (취소 엔드포인트에서는 200 멱등 응답) |
+| 409 | `PRODUCT_HAS_ACTIVE_DEAL` | 진행 중인 타임딜이 있는 상품 삭제 시도 |
 | 500 | `INTERNAL_ERROR` | 서버 내부 오류 |
 
 ---
@@ -436,7 +494,12 @@ GET /api/v1/time-deals?status=OPEN&cursor=eyJpZCI6NTB9&size=10
 
 - **Access Token**: 30분 만료, 응답 Header 또는 Body로 전달
 - **Refresh Token**: 14일 만료, Redis에 `refresh:{userId}` 키로 저장
-- **로그아웃**: Refresh Token 삭제 + Access Token을 Redis 블랙리스트에 TTL과 함께 등록
+- **토큰 전달 정책**:
+  - 기본(백엔드 API 소비자): Refresh Token을 응답 Body로 전달
+  - 확장(브라우저/Swagger UI): Refresh Token을 쿠키로 전달 허용 (정책: §4.6 로그인 응답 참조)
+- **재발급 입력 우선순위**: `body.refreshToken` 우선, body 미존재 시 cookie fallback
+- **로그아웃**: Refresh Token 삭제 + Access Token의 SHA-256 해시를 Redis 블랙리스트에 TTL과 함께 등록 (`blacklist:{sha256(accessToken)}` → `"true"`)
+- **로그아웃 쿠키 처리**: 쿠키 모드 사용 시 `Max-Age=0`으로 Refresh 쿠키 즉시 만료
 - **Refresh Token Rotation**: 재발급 시 기존 Refresh Token 무효화, 새 토큰 발급
 
 #### 5.1.3 인가 (Authorization)
@@ -447,6 +510,12 @@ GET /api/v1/time-deals?status=OPEN&cursor=eyJpZCI6NTB9&size=10
 | ADMIN | USER 권한 전체 + 상품 CRUD + 타임딜 CRUD |
 
 - Spring Security 6.5 `SecurityFilterChain` 기반 설정
+- permitAll: `/api/v1/auth/signup`, `/api/v1/auth/login`, `/api/v1/auth/reissue`, `GET /api/v1/products/**`, `GET /api/v1/time-deals/**`
+- authenticated: `/api/v1/auth/logout` (Bearer 토큰 필수)
+- reissue는 Access Token 만료 상태에서 호출되므로 SecurityFilterChain에서 permitAll. 인증은 서비스 레이어에서 Refresh Token 검증으로 대체
+- `SessionCreationPolicy.STATELESS` 적용
+- CSRF: `/api/**` 범위에서 비활성화(또는 ignoringRequestMatchers)하고, 인증은 JWT + Refresh 검증으로 대체
+- CORS: `allowedOrigins` 화이트리스트를 환경변수로 관리, `allowedHeaders`에 `Authorization`·`Idempotency-Key` 포함, 기본 `allowCredentials=false`. 쿠키 기반 재발급 활성화 환경에서만 `allowCredentials=true`
 - `@PreAuthorize("hasRole('ADMIN')")` 또는 커스텀 `AuthorizationManager`
 - 본인 리소스 접근 검증: 주문 조회/취소 시 `order.userId == currentUser.id` 체크
 
@@ -460,6 +529,7 @@ GET /api/v1/time-deals?status=OPEN&cursor=eyJpZCI6NTB9&size=10
 - `UPCOMING → OPEN`: `start_time <= NOW() AND status = 'UPCOMING'`
 - `OPEN → CLOSED`: `end_time <= NOW() AND status = 'OPEN'` 또는 `remaining_stock = 0`
 - 상태 전이는 벌크 UPDATE 쿼리로 처리 (개별 엔티티 로드 불필요)
+- 주문 생성 시점에 `status`뿐 아니라 `startTime <= now < endTime`을 함께 검증하여, 스케줄러 주기(최대 59초)로 인한 경계 시간 오차를 보정한다.
 
 ### 5.3 동시성 제어 — 단계별 구현 및 비교 ⚡
 
@@ -501,17 +571,19 @@ private Long version;
 #### Phase 4: Redis 원자적 연산
 
 ```lua
--- Lua Script: 원자적 재고 차감
+-- Lua Script: 원자적 재고 차감 (quantity 지원)
 local stock = tonumber(redis.call('GET', KEYS[1]))
-if stock == nil or stock <= 0 then
-    return -1
-end
-return redis.call('DECR', KEYS[1])
+local quantity = tonumber(ARGV[1])
+if stock == nil then return -2 end            -- 키 없음 (딜 미오픈)
+if quantity == nil or quantity <= 0 then return -3 end  -- 잘못된 수량
+if stock < quantity then return -1 end        -- 재고 부족
+return redis.call('DECRBY', KEYS[1], quantity)
 ```
 
 - **장점**: DB 부하 제거, 원자적 연산으로 정합성 보장, 높은 TPS
 - **한계**: Redis 장애 시 대응 필요, DB와 Redis 간 데이터 정합성 관리
-- **설계 근거**: 우아한형제들 빼빼로데이 이벤트에서 Redis Replication Read 시 카운터 불일치로 초과 발급 발생 → 본 프로젝트는 Master 노드 단일 Lua Script으로 원자성 확보. 여기어때 기술블로그의 Redis INCR + Kafka 비동기 DB Write 패턴도 참고하여, 재고 차감(Redis)과 주문 저장(DB)을 분리
+- **설계 근거**: 우아한형제들 빼빼로데이 이벤트에서 Redis Replication Read 시 카운터 불일치로 초과 발급 발생 → 본 프로젝트는 Master 노드 단일 Lua Script으로 원자성 확보. 여기어때 기술블로그의 Redis INCR + Kafka 비동기 DB Write 패턴을 참고하되, **주문 저장은 동기로 처리**하여 201 응답 시점에 DB 저장이 보장되도록 설계. 비동기는 후속 처리(알림, 이력 저장 등)에만 적용
+- **주의**: Redis와 MySQL 간 분산 트랜잭션은 사용하지 않는다. Redis 차감 성공 후 DB 저장 실패 시 Redis 재고 복구(보상 처리)를 수행하고, 실패 로그/재처리 큐로 누락을 추적한다.
 
 #### 비교 측정 항목
 
@@ -534,12 +606,12 @@ return redis.call('DECR', KEYS[1])
 │                                                              │
 │  전략          │ 초과판매 │ TPS    │ p95(ms) │ 커넥션 사용량   │
 │  ─────────────│─────────│────────│─────────│───────────────  │
-│  synchronized │ 0건     │ ???    │ ???     │ 1              │
-│  비관적 락     │ 0건     │ ???    │ ???     │ pool 최대치     │
-│  낙관적 락     │ 0건     │ ???    │ ???     │ 유동적          │
-│  Redis DECR   │ 0건     │ ???    │ ???     │ 0 (Redis)      │
+│  synchronized │ 0건     │ N/A(측정 전) │ N/A(측정 전) │ 1              │
+│  비관적 락     │ 0건     │ N/A(측정 전) │ N/A(측정 전) │ pool 최대치     │
+│  낙관적 락     │ 0건     │ N/A(측정 전) │ N/A(측정 전) │ 유동적          │
+│  Redis DECRBY │ 0건     │ N/A(측정 전) │ N/A(측정 전) │ 낮음 (INSERT)  │
 │                                                              │
-│  ✅ 결론: Redis DECR이 TPS ???배 우수, DB 부하 제거            │
+│  결론: M8-009 부하 테스트 측정 완료 후 수치 기반으로 확정       │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -552,7 +624,13 @@ return redis.call('DECR', KEYS[1])
 | 타임딜 목록 (OPEN) | `cache:deals:open` | Cache Aside | 30초 | 분 단위 |
 | 타임딜 상세 | `cache:deal:{id}` | Cache Aside | 60초 | 분 단위 |
 | 상품 상세 | `cache:product:{id}` | Cache Aside | 5분 | 일 단위 |
-| 타임딜 잔여수량 | `deal:stock:{dealId}` | Redis 직접 조회 (Write-Through) | 없음 (실시간) | 초 단위 |
+| 타임딜 잔여수량 | `deal:stock:{dealId}` | Redis 원자 카운터 (Source of Truth) | endTime + 1시간 (안전장치) | 초 단위 |
+
+**Redis ↔ DB 재고 동기화 규약 (Phase 4)**:
+- **UPCOMING → OPEN 전이 시**: DB `remaining_stock` 값을 Redis `deal:stock:{dealId}` 키에 초기화 (`SET`), TTL = `endTime - now + 1시간` (안전장치)
+- **OPEN 상태 중**: Redis가 재고의 Source of Truth. DB `remaining_stock`은 주문 저장 시 함께 차감하여 조회 일관성 유지
+- **OPEN → CLOSED 전이 시**: Redis 최종 잔여값으로 DB `remaining_stock`을 동기화한 뒤 Redis 키 삭제
+- **Redis 장애 시**: DB 비관적 락 폴백. `remaining_stock`이 근사치로 유지되므로 즉시 전환 가능
 
 **캐시 무효화 전략**:
 - 타임딜 상태 변경 시 관련 캐시 명시적 삭제
@@ -560,15 +638,21 @@ return redis.call('DECR', KEYS[1])
 - TTL 기반 자동 만료를 1차 방어선으로 사용
 
 **Redis 직렬화 전략**:
-- 캐시 값: `Jackson2JsonRedisSerializer` — JSON 가독성 + 디버깅 용이
-- Refresh Token / 블랙리스트: `StringRedisSerializer` — 단순 문자열, 오버헤드 최소화
+- 캐시 값: `GenericJackson2JsonRedisSerializer` — JSON 가독성 + 디버깅 용이 + 안전한 타입 매핑. `ObjectMapper.activateDefaultTyping`은 역직렬화 공격면이 열리므로 사용 금지
+- Refresh Token / 블랙리스트 / 멱등키: `StringRedisSerializer` — 단순 문자열, 오버헤드 최소화
 
 ### 5.5 비동기 이벤트 처리
 
 우아한형제들 배민스토어의 이벤트 기반 아키텍처를 참고하되, 현재 스코프에서는 Spring 내부 이벤트로 구현하고 향후 Kafka 전환이 가능하도록 인터페이스를 추상화한다.
 
 ```
-[주문 생성 완료]
+[Redis 재고 차감 (Lua Script, 동기)]
+    │
+    ▼
+[DB 주문 저장 (동기)]
+    │
+    ▼
+[201 Created 응답 반환]
     │
     ▼
 [ApplicationEvent 발행: OrderCreatedEvent]
@@ -577,10 +661,12 @@ return redis.call('DECR', KEYS[1])
     └──► [@Async] 알림 처리 (로그 기록, 향후 확장 포인트)
 ```
 
+> **주의**: 재고 차감(Redis)과 주문 저장(DB)은 반드시 동기로 처리하여 API 응답 시점에 정합성을 보장한다. 비동기는 후속 이벤트 처리에만 적용한다. DB 저장 실패 시 Redis 재고를 복구(보상 처리)하여 재고 유실을 방지한다.
+
 - Spring `ApplicationEventPublisher`를 통한 도메인 이벤트 발행
 - `@TransactionalEventListener(phase = AFTER_COMMIT)`으로 트랜잭션 커밋 후 처리
 - `@Async` + `CompletableFuture`로 비동기 처리
-- **확장 포인트**: `EventPublisher` 인터페이스를 정의하고, 현재는 `SpringEventPublisher` 구현체 사용. 향후 `KafkaEventPublisher`로 교체 가능한 구조
+- **확장 포인트**: `DomainEventPublisher` 인터페이스를 정의하고, 현재는 `SpringEventPublisher` 구현체 사용. 향후 `KafkaEventPublisher`로 교체 가능한 구조
 
 ### 5.6 DB 최적화
 
@@ -600,11 +686,12 @@ return redis.call('DECR', KEYS[1])
 | 항목 | 구현 |
 |---|---|
 | 비밀번호 암호화 | BCrypt (strength 10) |
-| JWT 서명 | HMAC-SHA256 또는 RSA |
-| Refresh Token 저장 | Redis (서버 사이드, HttpOnly 불필요) |
-| CORS | 허용 Origin 화이트리스트 |
+| JWT 서명 | HMAC-SHA256 (단일 백엔드 기준) |
+| Refresh Token 저장 | Redis 서버 사이드 저장 + Rotation 적용. 기본은 응답 Body, 브라우저/Swagger UI 확장 시 HttpOnly 쿠키 허용 |
+| CORS | 허용 Origin 화이트리스트(환경변수), 기본 `allowCredentials=false`, 쿠키 모드 환경에서만 `true` |
+| CSRF | `/api/**`는 Stateless JWT 전제로 비활성화(또는 ignore) |
 | SQL Injection | JPA Parameterized Query (기본 방어) |
-| XSS | Jackson 자동 이스케이프 + 입력 검증 |
+| XSS | REST API는 `Content-Type: application/json` 응답만 반환하여 브라우저의 HTML 파싱 방지 + 입력값 검증(@Valid). Jackson은 JSON 직렬화 도구이며 HTML 이스케이프와는 무관 |
 | Rate Limiting | 고려사항으로 문서화 (구현은 선택) |
 
 ### 6.2 로깅 및 모니터링
@@ -642,7 +729,7 @@ spring:
 **동시성 테스트별 커넥션 풀 관찰 포인트**:
 - **비관적 락**: 커넥션 점유 시간 ↑ → `pending` 카운트 ↑ → TPS ↓ 상관관계 측정
 - **낙관적 락**: 재시도 시 커넥션 재획득 → 전체 커넥션 사용 패턴 분석
-- **Redis DECR**: DB 커넥션 사용량 ↓ → 주문 INSERT만 사용 → 커넥션 여유 확인
+- **Redis DECRBY**: DB 커넥션 사용량 ↓ → 주문 INSERT만 사용 → 커넥션 여유 확인
 
 ### 6.4 예외 처리
 
@@ -656,7 +743,7 @@ spring:
 | 계층 | 대상 | 도구 | 목표 |
 |---|---|---|---|
 | Unit | 도메인 모델, Service 로직 | JUnit 5 + Mockito | 비즈니스 로직 정확성 |
-| Integration | Repository, API 엔드포인트 | Testcontainers 1.20.x + MockMvc | DB/Redis 연동 검증 |
+| Integration | Repository, API 엔드포인트 | Testcontainers 1.21.x + MockMvc | DB/Redis 연동 검증 |
 | Concurrency | 재고 차감 동시 요청 | ExecutorService + CountDownLatch | 정합성 보장 |
 | Load | 주문 API | k6 | TPS, 응답시간, 에러율 |
 
@@ -675,7 +762,7 @@ spring:
 | **SRP** (단일 책임) | 하나의 클래스는 하나의 책임만 가진다 | `OrderService`는 주문 생성만 담당, 재고 차감은 `StockService`로 분리 |
 | **OCP** (개방-폐쇄) | 확장에 열리고 변경에 닫힌 구조 | `StockService` 인터페이스 + 4개 구현체 — 새 전략 추가 시 기존 코드 수정 없음 |
 | **LSP** (리스코프 치환) | 하위 타입은 상위 타입을 대체 가능 | `RedisStockService`든 `PessimisticStockService`든 `StockService`로 동일하게 동작 |
-| **ISP** (인터페이스 분리) | 클라이언트에 필요한 인터페이스만 노출 | `EventPublisher` 인터페이스를 발행 전용으로 설계, 구독 로직은 별도 |
+| **ISP** (인터페이스 분리) | 클라이언트에 필요한 인터페이스만 노출 | `DomainEventPublisher` 인터페이스를 발행 전용으로 설계, 구독 로직은 별도 |
 | **DIP** (의존성 역전) | 구체 클래스가 아닌 추상화에 의존 | `OrderService` → `StockService`(인터페이스)에 의존, 구현체는 런타임 주입 |
 
 #### 객체지향 생활체조 9가지 원칙 (ThoughtWorks Anthology)
@@ -774,6 +861,7 @@ public void createOrder(OrderRequest request) {
 | 규칙 | 올바른 예 | 잘못된 예 |
 |---|---|---|
 | URI에 동사 사용 금지 — HTTP 메서드가 행위를 표현 | `POST /api/v1/orders` | `POST /api/v1/createOrder` |
+| 도메인 명령 엔드포인트는 예외적으로 POST 액션 경로 허용 | `POST /api/v1/orders/{id}/pay`, `POST /api/v1/orders/{id}/cancel`, `POST /api/v1/auth/reissue` | `GET /api/v1/orders/{id}/pay` |
 | 리소스명은 복수형 명사 | `/api/v1/products` | `/api/v1/product` |
 | 계층 관계는 `/`로 표현 | `/api/v1/users/{id}/orders` | `/api/v1/getUserOrders` |
 | URI 경로에는 소문자 + 하이픈(`-`) | `/api/v1/time-deals` | `/api/v1/timeDeals` |
@@ -809,6 +897,7 @@ public void createOrder(OrderRequest request) {
 #### 응답 형식 통일
 
 성공과 실패 모두 동일한 envelope 구조를 사용한다. 프론트엔드에서 일관된 파싱이 가능하도록 한다.
+**예외**: `204 No Content` 응답(DELETE 성공, POST /api/v1/auth/logout 등)은 body가 없으므로 envelope을 적용하지 않는다. 컨트롤러에서 `ResponseEntity.noContent().build()`를 반환한다.
 
 **성공 응답**:
 ```json
@@ -870,11 +959,19 @@ public void createOrder(OrderRequest request) {
 [ ] 커밋 메시지가 Conventional Commits 형식인가?
 ```
 
+### 7.5 문서 불변성 정책
+
+- 문서 상태는 `Draft → Ready for Implementation → Frozen`으로 관리한다.
+- 구현 착수 기준은 `Ready for Implementation`이며, 이 상태에서는 핵심 정책(인증/인가/멱등성/에러코드)을 임의 변경하지 않는다.
+- `latest`, `TBD`, `???` 표기는 금지한다. 버전/정책/결론은 구체값 또는 `N/A(측정 전)`로만 기록한다.
+- 이미지/런타임 태그는 고정한다: `mysql:8.4`, `redis:7-alpine`, Testcontainers MySQL도 `mysql:8.4` 고정.
+- PR 머지 전 문서 정합성 검사 훅(`doc-consistency-check.sh`) 통과를 필수로 한다.
+
 ---
 
 ## 8. 프로젝트 구조 (Project Structure)
 
-### 7.1 패키지 구조
+### 8.1 패키지 구조
 
 도메인형(기능형) 패키지 구조를 채택한다. 레이어드 구조(`controller/`, `service/`, `repository/` 최상위 분리)는 도메인이 늘어날수록 파일 탐색이 어렵고, 도메인 간 경계가 모호해진다. 도메인형 구조는 각 도메인이 독립적인 패키지를 가지므로 응집도가 높고, 향후 모듈 분리나 MSA 전환 시에도 유리하다.
 
@@ -924,21 +1021,19 @@ com.snapstock
 - `global/`은 모든 도메인에서 참조 가능, 역방향 참조 금지
 - 동시성 제어 4단계는 `order/service/stock/` 아래에 `StockService` 인터페이스와 구현체(`SyncStockService`, `PessimisticStockService`, `OptimisticStockService`, `RedisStockService`)로 전략 패턴 적용
 
-### 7.2 Git 브랜치 전략
+### 8.2 Git 브랜치 전략
 
 ```
 main ─────────────────────────────────────────────── 배포 가능 상태
   │
   └── develop ────────────────────────────────────── 개발 통합 브랜치
         │
-        ├── feat/auth ────── 회원/인증/인가
-        ├── feat/product ─── 상품 CRUD
-        ├── feat/timedeal ── 타임딜 CRUD + 스케줄러
-        ├── feat/order ───── 주문 + 동시성 제어
-        ├── feat/cache ───── Redis 캐싱
-        ├── feat/async ───── 비동기 이벤트
-        ├── feat/infra ───── Docker + CI/CD
-        └── fix/xxx ──────── 버그 수정
+        ├── feat/M2-006-jwt-token-provider ─── 이슈 기반 (권장)
+        ├── feat/M5-004-stock-service-interface
+        ├── feat/order-redis-stock ──────────── 이슈 없는 작업
+        ├── fix/M4-009-scheduler-timezone
+        ├── test/M5-012-concurrency-phase1
+        └── docs/M9-006-readme
 ```
 
 **브랜치 규칙**:
@@ -965,7 +1060,7 @@ main ─────────────────────────
 | `chore` | 빌드/설정 | `chore: Docker Compose Redis 추가` |
 | `perf` | 성능 개선 | `perf: 타임딜 목록 캐싱 적용` |
 
-### 7.3 README 구조 가이드
+### 8.3 README 구조 가이드
 
 면접관이 GitHub에서 가장 먼저 보는 것은 README이다. 아래 구조를 기준으로 프로젝트 완성 시 작성한다.
 
@@ -992,7 +1087,7 @@ main ─────────────────────────
 - dbdiagram.io 이미지
 
 ## API 명세
-- Swagger UI 링크 또는 REST Docs 링크
+- Swagger UI(OpenAPI) 링크
 
 ## 실행 방법
 - docker-compose up 원커맨드 구동
@@ -1060,7 +1155,7 @@ services:
 | 주차 | Phase | 주요 산출물 | 완료 기준 |
 |---|---|---|---|
 | **1~2주** | 기본기 | 회원/인증/인가 API + 테스트 | 회원가입 → 로그인 → 토큰 재발급 → 로그아웃 전체 플로우 통합 테스트 통과 |
-| **3~4주** | 핵심 CRUD | 상품/타임딜/주문 API + ERD 확정 | 모든 CRUD API 동작 + REST Docs 또는 Swagger 문서 생성 |
+| **3~4주** | 핵심 CRUD | 상품/타임딜/주문 API + ERD 확정 | 모든 CRUD API 동작 + OpenAPI(Swagger UI) 문서 생성 |
 | **5~6주** | 동시성 제어 | 4단계 락 전략 구현 + 비교 리포트 | 동시성 테스트 통과 + 단계별 성능 비교 표 완성 |
 | **7주** | 캐싱 + DB 최적화 | Redis 캐시 적용 + 쿼리 튜닝 | EXPLAIN 분석 기록 + 캐싱 전후 응답시간 비교 |
 | **8주** | 비동기 + 테스트 | 이벤트 분리 + 부하 테스트 | k6 리포트 (TPS, p95, 에러율) 완성 |
@@ -1077,11 +1172,11 @@ services:
 - **근거**: 커뮤니티 레퍼런스 풍부, 트러블슈팅 용이, 실무(한국 IT 기업 대부분 3.x 운영)와의 정합성. 면접에서 중요한 것은 프레임워크 버전이 아니라 동시성 제어·성능 최적화 등 기술적 깊이.
 - **리스크**: OSS 지원 2026년 6월 종료 예정. 프로젝트 완성 후 필요 시 4.0 마이그레이션 가능.
 
-### ADR-002: 동시성 전략 — Redis DECR 최종 채택
+### ADR-002: 동시성 전략 — Redis DECRBY 최종 채택
 
 - **맥락**: 타임딜 재고 차감은 가장 높은 동시성 부하가 예상되는 연산. 우아한형제들 빼빼로데이 이벤트에서 Redis Replication Read 시 카운터 불일치로 초과 발급이 발생한 사례가 있음.
-- **결정**: 4가지 전략을 모두 구현하되, 최종 운영 전략은 Redis Lua Script 기반 원자적 차감으로 결정.
-- **근거**: DB 부하 분리, 원자성 보장, 높은 TPS. Redis 장애 시에는 DB 비관적 락으로 폴백 가능하도록 설계. 여기어때의 Redis INCR + Kafka 비동기 DB Write 패턴을 참고하여, 재고 확인은 Redis에서 수행하고 주문 저장은 DB에 비동기로 처리하는 구조 적용.
+- **결정**: 4가지 전략을 모두 구현하되, 최종 운영 전략은 Redis Lua Script 기반 원자적 차감(`DECRBY`)으로 결정.
+- **근거**: DB 부하 분리, 원자성 보장, 높은 TPS. Redis 장애 시에는 DB 비관적 락으로 폴백 가능하도록 설계. 여기어때의 Redis INCR + Kafka 비동기 DB Write 패턴을 참고하되, 주문 저장은 **동기**로 처리하여 API 응답(201 + orderId) 시점에 DB 저장을 보장. 비동기는 후속 처리(이벤트 발행, 알림)에만 적용한다. Redis-DB는 분산 트랜잭션을 사용하지 않고 보상 처리 + 재처리 전략으로 정합성을 관리한다.
 
 ### ADR-003: 커서 기반 페이지네이션
 
@@ -1104,16 +1199,16 @@ services:
 
 ## 12. 확장 고려사항 (Future Considerations)
 
-현재 스코프에 포함하지 않으나, 아키텍처 설계 시 확장 가능성을 고려하는 항목.
+현재 스코프에 포함하지 않거나, 최소 설계(인터페이스/규약)만 반영한 항목.
 
 | 항목 | 설명 | 현재 대응 | 참고 사례 |
 |---|---|---|---|
 | 대기열 시스템 | Redis Sorted Set 기반 접속자 대기열 | 인터페이스 설계만 수행, 구현은 Phase 2 | 네이버 콘퍼런스 참가 신청 |
-| Kafka 이벤트 스트리밍 | Spring Events → Kafka 전환 | `EventPublisher` 인터페이스 추상화 | 배민스토어 이벤트 기반 아키텍처 |
+| Kafka 이벤트 스트리밍 | Spring Events → Kafka 전환 | `DomainEventPublisher` 인터페이스 추상화 | 배민스토어 이벤트 기반 아키텍처 |
 | 분산 락 (Redisson) | 더 정교한 분산 환경 제어 | Redis Lua Script으로 충분, 필요 시 전환 | |
 | 모니터링 | Prometheus + Grafana 대시보드 | Actuator 엔드포인트 + HikariCP 메트릭 활성화 | 토스 서버 모니터링 전략 |
 | 알림 서비스 | 주문 완료/타임딜 오픈 알림 | 이벤트 리스너에 확장 포인트 마련 | |
-| Redis → DB Sync | 재고 운영 종료 시 Redis → DB 동기화 | 인터페이스 설계 | 후덥 기술블로그 쿠폰 재고 설계 |
+| Redis → DB Sync | 재고 운영 종료 시 Redis → DB 동기화 | **현재 범위에 포함** — 5.4절 동기화 규약 참조 | 후덥 기술블로그 쿠폰 재고 설계 |
 
 ---
 
@@ -1138,6 +1233,15 @@ services:
 
 | 버전 | 날짜 | 작성자 | 변경 내용 |
 |---|---|---|---|
+| v3.4.0 | 2026-02-18 | heygw44 | 백엔드 포트폴리오 투입 기준 정비 — 문서 상태 Ready for Implementation 상향, 인증 전달 정책 정본화(기본 body + 쿠키 확장), OpenAPI `bearerAuth`/`cookieAuth` 규약 및 reissue 입력 우선순위 명시, SecurityConfig의 CORS/CSRF 운영 정책 구체화, 주문 cancel의 Idempotency-Key 필수화, REST URI 원칙에 도메인 명령 엔드포인트 예외 규칙 추가, 성능 템플릿의 미확정 수치 표기(N/A)로 정리, 문서 불변성 정책(Draft→Ready→Frozen, latest/TBD/??? 금지) 추가 |
+| v3.3.3 | 2026-02-18 | heygw44 | 4차 교차검증 — reissue permitAll 복원(Access 만료 상태 호출 대응), SameSite=Lax;Path=/api/v1/auth 전 문서 통일(정본+참조 구조), SecurityFilterChain 규칙 정본 1곳 통일, 멱등키 스코프 resourceId 추가(endpoint:resourceId:userId:key), 블랙리스트 키 표기 sha256(accessToken) 통일, 문서 정합성 자동검사 훅 추가 |
+| v3.3.2 | 2026-02-18 | heygw44 | 2차 교차검증 — 멱등키 스코프 분리(endpoint+userId+key), activateDefaultTyping 보안 취약 경고 및 GenericJackson2JsonRedisSerializer 전환, 주문 취소 멱등 정책과 ORDER_ALREADY_CANCELLED 적용 범위 명확화, 204 No Content envelope 예외 명시, 스케줄러 CLOSED 전이에 재고 소진 조건 추가, Redis 재고 키 TTL=endTime+1h 통일, 브랜치 네이밍 이슈 번호 기반 권장으로 정비 |
+| v3.3.1 | 2026-02-18 | heygw44 | 문서 교차검증 수정 — DUPLICATE_NICKNAME 에러코드 추가(닉네임 UNIQUE 제약조건 대응), EventPublisher→DomainEventPublisher 명명 통일, 멱등키 저장소(Redis) 명시 |
+| v3.3.0 | 2026-02-18 | heygw44 | 전범위 재검증 — Product Soft Delete 전환(deleted_at 추가), ERD 정합성 보정(users·time_deals에 updated_at 추가), Lua Script 반환코드 세분화(-1/-2/-3), 에러코드 테이블 8건 추가(MILESTONES 동기화), 상품 삭제 API Soft Delete 반영 |
+| v3.2.2 | 2026-02-18 | heygw44 | 전범위 정합성 재검증 반영 — 확장 고려사항 문구를 현재 범위 정책과 일치하도록 수정(미포함/최소설계 반영 항목으로 명확화) |
+| v3.2.1 | 2026-02-18 | heygw44 | 문서 정합성 보정 — 주문 취소 규약 명시 및 에러 코드 표 반영, 로그인 응답 예시에 모바일/서버 클라이언트 범위를 명시하고 브라우저 Refresh Token 쿠키 전달 정책 문구를 API 예시에 명확화 |
+| v3.2.0 | 2026-02-18 | heygw44 | 실무 운영 정책 반영 — 주문 `UNIQUE (user_id, time_deal_id)` 제약 및 인덱스 추가, 스케줄러 쿼리용 인덱스 분리, 결제/취소 `Idempotency-Key` 규약 추가, Refresh Token 전달 정책(웹 HttpOnly 쿠키 기본/모바일 Body 허용) 확정, Redis `DECRBY` 표기 통일, Redis-DB 분산 트랜잭션 표현 정정(보상 처리 + 재처리) |
+| v3.1.0 | 2026-02-18 | heygw44 | 아키텍처 결함 9건 수정 — [CRITICAL] Redis 재고 차감+주문 저장 동기 처리로 원자성 보장, Lua Script DECRBY quantity 반영 / [HIGH] Redis↔DB 재고 동기화 규약 신규 추가, 커서 페이지네이션 숫자 커서로 통일, 인덱스 id DESC 기반으로 재설계, 보안(HttpOnly·XSS) 설명 정정 / [MEDIUM] nickname UNIQUE 제약조건 추가, 로그아웃 설명 통일 / [LOW] 8장 하위 번호 오류 수정 |
 | v3.0.0 | 2026-02-18 | heygw44 | 7장 코딩 가이드라인 신규 추가 — OOP/SOLID 원칙 적용 가이드, 객체지향 생활체조 9원칙 체크리스트, 클린코드 네이밍/메서드 작성 원칙(우테코 기준), RESTful HTTP API 설계 원칙(메서드·상태코드·URI 규칙), 코드 품질 PR 체크리스트, Early Return/Guard Clause 코드 예시 |
 | v2.0.0 | 2026-02-18 | heygw44 | 프로젝트명 FlashDeal → SnapStock 변경, 기술 블로그 레퍼런스 체계화(우아한형제들/쿠팡/토스/여기어때/사람인), HikariCP 커넥션 풀 설정 추가, Redis 직렬화 전략 추가, 동시성 비교 리포트 템플릿 추가, 캐싱 전략에 변경 빈도 기준 추가, 이벤트 확장 포인트 구체화, ADR-005 추가, 모니터링 섹션 강화 |
 | v1.2.0 | 2026-02-18 | heygw44 | 패키지 구조, Git 전략/커밋 컨벤션, README 가이드, API 요청/응답 상세 예시 추가 |
