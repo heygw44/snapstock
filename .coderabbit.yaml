@@ -23,7 +23,6 @@ reviews:
   path_filters:
     - "!**/*.md"
     - "!docs/**"
-    - "!.claude/**"
     - "!.github/**"
     - "!docker-compose*.yml"
     - "!k6-results/**"

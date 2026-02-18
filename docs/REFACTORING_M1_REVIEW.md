@@ -2,7 +2,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 문서 버전 | v1.0.1 |
+| 문서 버전 | v1.1.0 |
 | 작성일 | 2026-02-19 |
 | 상태 | Completed |
 | 범위 | M1 공통 모듈 + 보안 설정 + 운영 설정 |
@@ -297,3 +297,27 @@ M1 구현 코드 리뷰에서 확인된 5개 이슈를 실무 투입 가능한 �
 - [x] `CursorPageResponse` 방어적 복사 적용
 - [x] 단위/통합 테스트 보강
 - [x] `./gradlew clean test` 통과
+
+---
+
+## 10. CodeRabbit 리뷰 반영 (PR #12)
+
+### 반영 완료
+
+| # | 파일 | 이슈 | 조치 |
+|---|---|---|---|
+| 1 | `.coderabbit.yaml` | `.claude/**` path_filters가 code_guidelines를 무력화 | `.claude/**` 제외 항목 제거 |
+| 2 | `ApiAccessDeniedHandler` | `"UTF-8"` 매직 문자열 | `StandardCharsets.UTF_8.name()` |
+| 3 | `ApiAuthenticationEntryPoint` | `"UTF-8"` 매직 문자열 | `StandardCharsets.UTF_8.name()` |
+| 4 | `ApiResponse` | class → record 전환 + `"SUCCESS"/"ERROR"` 상수화 | record 전환, `STATUS_SUCCESS`/`STATUS_ERROR` 상수 추출 |
+| 5 | `SecurityConfig` | 엔드포인트 URL 매직 문자열 | `ACTUATOR_HEALTH`/`ACTUATOR_HEALTH_PATTERN` 상수 추출 |
+| 6 | `GlobalExceptionHandler` | `"..."` 매직 문자열 | `ELLIPSIS` 상수 추출 |
+| 7 | `CursorPageResponse` | 에러 메시지 매직 문자열 + 메서드 길이 | 에러 메시지 상수 추출, 검증 로직 `validateParams()` 분리 |
+| 8 | 테스트 6개 파일 | Given-When-Then 구분 미흡 | 주석 + 빈 줄로 G-W-T 구조 정리 |
+
+### 의도적 미반영
+
+| # | 이슈 | 사유 |
+|---|---|---|
+| 1 | `JpaRepository<Entity, Long>` 유연화 | PRD에서 전체 엔티티 Long ID 확정. 의도적 제약 |
+| 2 | `application-local.yml.example` 자격 증명 | `.example` 파일은 의도적 예시값. 추후 주석 안내 추가 예정 |

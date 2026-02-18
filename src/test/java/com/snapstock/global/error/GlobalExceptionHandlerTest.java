@@ -35,8 +35,11 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("CustomException 발생 시 해당 ErrorCode의 상태코드와 에러 응답을 반환한다")
     void CustomException_발생시_비즈니스에러_응답() throws Exception {
-        mockMvc.perform(get("/test/custom-exception"))
-                .andExpect(status().isUnauthorized())
+        // when
+        var result = mockMvc.perform(get("/test/custom-exception"));
+
+        // then
+        result.andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("ERROR"))
                 .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"))
                 .andExpect(jsonPath("$.message").value(ErrorCode.UNAUTHORIZED.getMessage()));
@@ -45,10 +48,13 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Validation 실패 시 400과 fieldErrors 배열을 반환한다")
     void Validation_실패시_fieldErrors_응답() throws Exception {
-        mockMvc.perform(post("/test/validation")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"\"}"))
-                .andExpect(status().isBadRequest())
+        // when
+        var result = mockMvc.perform(post("/test/validation")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"\"}"));
+
+        // then
+        result.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("ERROR"))
                 .andExpect(jsonPath("$.errorCode").value("INVALID_INPUT"))
                 .andExpect(jsonPath("$.fieldErrors").isArray())
@@ -58,8 +64,11 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("예상외 예외 발생 시 500과 INTERNAL_ERROR를 반환한다")
     void 예상외_예외_발생시_500_응답() throws Exception {
-        mockMvc.perform(get("/test/unexpected"))
-                .andExpect(status().isInternalServerError())
+        // when
+        var result = mockMvc.perform(get("/test/unexpected"));
+
+        // then
+        result.andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.status").value("ERROR"))
                 .andExpect(jsonPath("$.errorCode").value("INTERNAL_ERROR"));
     }
@@ -67,10 +76,13 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("민감 필드(password) 검증 실패 시 value가 마스킹된다")
     void Validation_민감필드_password_마스킹() throws Exception {
-        mockMvc.perform(post("/test/validation-sensitive")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"test\",\"password\":\"ab\"}"))
-                .andExpect(status().isBadRequest())
+        // when
+        var result = mockMvc.perform(post("/test/validation-sensitive")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"test\",\"password\":\"ab\"}"));
+
+        // then
+        result.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors[0].field").value("password"))
                 .andExpect(jsonPath("$.fieldErrors[0].value").value("[REDACTED]"));
     }
@@ -78,10 +90,13 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("일반 필드 검증 실패 시 value가 그대로 노출된다")
     void Validation_일반필드_value_노출() throws Exception {
-        mockMvc.perform(post("/test/validation")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"\"}"))
-                .andExpect(status().isBadRequest())
+        // when
+        var result = mockMvc.perform(post("/test/validation")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"\"}"));
+
+        // then
+        result.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
                 .andExpect(jsonPath("$.fieldErrors[0].value").value(""));
     }

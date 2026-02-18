@@ -17,6 +17,7 @@ import java.util.Set;
 public class GlobalExceptionHandler {
 
     private static final String REDACTED = "[REDACTED]";
+    private static final String ELLIPSIS = "...";
     private static final int VALUE_MAX_LENGTH = 200;
     private static final Set<String> SENSITIVE_FIELDS = Set.of(
             "password", "token", "secret", "authorization", "credential"
@@ -65,7 +66,7 @@ public class GlobalExceptionHandler {
         }
         String value = String.valueOf(error.getRejectedValue());
         if (value.length() > VALUE_MAX_LENGTH) {
-            return value.substring(0, VALUE_MAX_LENGTH) + "...";
+            return value.substring(0, VALUE_MAX_LENGTH) + ELLIPSIS;
         }
         return value;
     }

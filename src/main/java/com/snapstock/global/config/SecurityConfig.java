@@ -16,6 +16,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private static final String ACTUATOR_HEALTH = "/actuator/health";
+    private static final String ACTUATOR_HEALTH_PATTERN = "/actuator/health/**";
+
     private final ApiAuthenticationEntryPoint authenticationEntryPoint;
     private final ApiAccessDeniedHandler accessDeniedHandler;
 
@@ -29,7 +32,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                .requestMatchers(ACTUATOR_HEALTH, ACTUATOR_HEALTH_PATTERN).permitAll()
                 .anyRequest().authenticated());
         return http.build();
     }
