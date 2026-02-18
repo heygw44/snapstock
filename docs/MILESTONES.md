@@ -19,27 +19,27 @@
 
 ### 인프라 기초
 
-- [ ] **M1-001** — Spring Boot 프로젝트 초기화 `@planner`
+- [x] **M1-001** — Spring Boot 프로젝트 초기화 `@planner`
   - Spring Initializr: Java 21, Gradle Groovy, Spring Boot 3.5.10
   - Dependencies: Web, JPA, Security, Validation, Redis, Actuator, Lombok, MySQL Driver
   - `.gitignore` (Gradle, IDE, .env)
   - 빈 `SnapStockApplication.java` 실행 확인
 
-- [ ] **M1-002** — Docker Compose 환경 구성
+- [x] **M1-002** — Docker Compose 환경 구성
   - `docker-compose.yml`: MySQL 8.4 + Redis 7 alpine
   - MySQL: root 비밀번호 환경변수, `snapstock` DB 자동 생성
   - Redis: 6379 포트 매핑
   - health check 설정 (MySQL: `mysqladmin ping`, Redis: `redis-cli ping`)
   - `docker-compose up -d` → 컨테이너 정상 기동 확인
 
-- [ ] **M1-003** — application.yml 프로파일 분리
+- [x] **M1-003** — application.yml 프로파일 분리
   - `application.yml`: 공통 설정 (server.port, actuator)
   - `application-local.yml`: Docker MySQL/Redis 접속 정보, ddl-auto: update
   - `application-test.yml`: Testcontainers용 (datasource 없음, ddl-auto: create-drop)
   - `spring.jpa.open-in-view: false` 설정
   - HikariCP: `maximum-pool-size: 10`, `leak-detection-threshold: 30000`
 
-- [ ] **M1-004** — Gradle 의존성 정리 + 빌드 확인
+- [x] **M1-004** — Gradle 의존성 정리 + 빌드 확인
   - `build.gradle` 의존성 정리 (버전 관리: Spring Boot BOM 활용)
   - Testcontainers BOM 추가
   - 버전 고정 정책 적용: `latest` 태그/문구 금지, MySQL/Redis/Testcontainers 이미지 태그 고정
@@ -47,43 +47,43 @@
 
 ### 글로벌 모듈 — 공통 인프라
 
-- [ ] **M1-005** — BaseEntity 생성 `@planner`
+- [x] **M1-005** — BaseEntity 생성 `@planner`
   - `global/common/BaseEntity.java`
   - `@MappedSuperclass`, `@EntityListeners(AuditingEntityListener.class)`
   - `createdAt` (`@CreatedDate`, `updatable = false`), `updatedAt` (`@LastModifiedDate`)
   - `@EnableJpaAuditing` 설정 클래스
 
-- [ ] **M1-006** — ApiResponse 공통 응답 객체
+- [x] **M1-006** — ApiResponse 공통 응답 객체
   - `global/common/ApiResponse.java`
   - 필드: `status` (SUCCESS/ERROR), `data`, `message`, `errorCode`
   - `static success(T data)`, `static error(ErrorCode)`, `static validationError(List<FieldErrorResponse>)`
   - `FieldErrorResponse` record: `field`, `value`, `reason`
 
-- [ ] **M1-007** — ErrorCode enum + CustomException
+- [x] **M1-007** — ErrorCode enum + CustomException
   - `global/error/ErrorCode.java`: `HttpStatus` + `message` 매핑
   - 초기 에러코드: `INVALID_INPUT(400)`, `UNAUTHORIZED(401)`, `FORBIDDEN(403)`, `INTERNAL_ERROR(500)`
   - `global/error/CustomException.java`: `RuntimeException` 상속, `ErrorCode` 필드
 
-- [ ] **M1-008** — GlobalExceptionHandler
+- [x] **M1-008** — GlobalExceptionHandler
   - `global/error/GlobalExceptionHandler.java`
   - `@RestControllerAdvice`
   - `CustomException` → 비즈니스 예외 처리 (WARN 로그)
   - `MethodArgumentNotValidException` → Validation 에러 (fieldErrors 배열)
   - `Exception` → 예상 외 오류 (ERROR 로그, 500 응답)
 
-- [ ] **M1-009** — CursorPageResponse 공통 페이징 객체
+- [x] **M1-009** — CursorPageResponse 공통 페이징 객체
   - `global/common/CursorPageResponse.java`
   - 필드: `List<T> content`, `Long nextCursor`, `boolean hasNext`
   - `static of(List<T> content, int size, Function<T, Long> idExtractor)`
   - size + 1 조회 후 hasNext 판단 로직
 
-- [ ] **M1-010** — Git Hooks 설치
+- [x] **M1-010** — Git Hooks 설치
   - `cp .claude/hooks/pre-commit-check.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`
   - `cp .claude/hooks/commit-msg-check.sh .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg`
   - 커밋 시 자동 검증: else 키워드, System.out.println, 하드코딩 시크릿, Conventional Commits 형식
   - docs/ 또는 .claude/ 파일 스테이징 시 `doc-consistency-check.sh` 자동 실행 (정책 정합성 검증)
 
-- [ ] **M1-011** — 통합 확인 + 첫 커밋
+- [x] **M1-011** — 통합 확인 + 첫 커밋
   - `./gradlew bootRun` → 8080 기동 성공
   - `/actuator/health` → 200 OK + MySQL/Redis 연결 확인
   - git init → 첫 커밋: `chore: initialize SnapStock project`
