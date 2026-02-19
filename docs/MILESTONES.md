@@ -114,13 +114,13 @@
   - `boolean existsByEmail(String email)`
   - `boolean existsByNickname(String nickname)`
 
-- [ ] **M2-004** — 회원가입 API
+- [x] **M2-004** — 회원가입 API
   - `SignUpRequest` record: `@Email email`, `@NotBlank password`(8~20자), `@NotBlank nickname`
   - `UserService.signUp()`: 이메일 중복 체크 → 닉네임 중복 체크 → BCrypt 암호화 → 저장
   - `AuthController.signUp()`: `POST /api/v1/auth/signup` → 201 Created
   - ErrorCode 추가: `DUPLICATE_EMAIL(409)`, `DUPLICATE_NICKNAME(409)`
 
-- [ ] **M2-005** — 회원가입 테스트
+- [x] **M2-005** — 회원가입 테스트
   - Unit: `UserServiceTest` — 정상가입, 이메일중복_예외발생
   - API: `AuthControllerTest` — 201 응답, 400 Validation 실패, 409 중복
 
