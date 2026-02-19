@@ -22,7 +22,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenRedisService tokenRedisService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public LoginResponse login(LoginRequest request) {
         User user = findUserByEmail(request.email());
         validateNotDeleted(user);
@@ -30,7 +30,7 @@ public class AuthService {
         return issueTokens(user);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public LoginResponse reissue(String refreshToken) {
         validateRefreshTokenPresent(refreshToken);
         validateRefreshTokenValid(refreshToken);
@@ -40,9 +40,7 @@ public class AuthService {
     }
 
     public void logout(String accessToken, Long userId) {
-        if (accessToken == null) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED);
-        }
+        validateAccessToken(accessToken);
         long remainingMs = jwtTokenProvider.getRemainingExpirationMs(accessToken);
         tokenRedisService.addToBlacklist(accessToken, remainingMs);
         tokenRedisService.deleteRefreshToken(userId);
@@ -72,6 +70,15 @@ public class AuthService {
                 user.getId(), refreshToken, jwtTokenProvider.getRefreshTokenExpirationMs());
         return LoginResponse.of(
                 accessToken, refreshToken, jwtTokenProvider.getAccessTokenExpirationMs());
+    }
+
+    private void validateAccessToken(String accessToken) {
+        if (accessToken == null || accessToken.isBlank()) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+        if (!jwtTokenProvider.validateToken(accessToken)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
     }
 
     private void validateRefreshTokenPresent(String refreshToken) {

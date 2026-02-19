@@ -272,6 +272,7 @@ class AuthServiceTest {
         @Test
         void logout_정상요청_블랙리스트등록() {
             // given
+            given(jwtTokenProvider.validateToken(ACCESS_TOKEN)).willReturn(true);
             given(jwtTokenProvider.getRemainingExpirationMs(ACCESS_TOKEN)).willReturn(REMAINING_MS);
 
             // when
@@ -284,6 +285,7 @@ class AuthServiceTest {
         @Test
         void logout_정상요청_RefreshToken삭제() {
             // given
+            given(jwtTokenProvider.validateToken(ACCESS_TOKEN)).willReturn(true);
             given(jwtTokenProvider.getRemainingExpirationMs(ACCESS_TOKEN)).willReturn(REMAINING_MS);
 
             // when
@@ -291,6 +293,27 @@ class AuthServiceTest {
 
             // then
             then(tokenRedisService).should().deleteRefreshToken(USER_ID);
+        }
+
+        @Test
+        void logout_토큰null_UNAUTHORIZED() {
+            // when & then
+            assertThatThrownBy(() -> authService.logout(null, USER_ID))
+                    .isInstanceOf(CustomException.class)
+                    .extracting(e -> ((CustomException) e).getErrorCode())
+                    .isEqualTo(ErrorCode.UNAUTHORIZED);
+        }
+
+        @Test
+        void logout_유효하지않은토큰_UNAUTHORIZED() {
+            // given
+            given(jwtTokenProvider.validateToken("invalid")).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> authService.logout("invalid", USER_ID))
+                    .isInstanceOf(CustomException.class)
+                    .extracting(e -> ((CustomException) e).getErrorCode())
+                    .isEqualTo(ErrorCode.UNAUTHORIZED);
         }
     }
 

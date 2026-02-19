@@ -32,6 +32,8 @@ public class AuthController {
 
     private static final String REFRESH_COOKIE_NAME = "refreshToken";
     private static final String REFRESH_COOKIE_PATH = "/api/v1/auth";
+    private static final String REFRESH_COOKIE_SAME_SITE = "Lax";
+    private static final long EXPIRE_IMMEDIATELY = 0L;
     private static final long MS_TO_SECONDS = 1000;
 
     private final UserService userService;
@@ -59,7 +61,7 @@ public class AuthController {
 
     @PostMapping("/reissue")
     public ResponseEntity<ApiResponse<LoginResponse>> reissue(
-            @RequestBody(required = false) TokenReissueRequest request,
+            @Valid @RequestBody(required = false) TokenReissueRequest request,
             HttpServletRequest httpRequest) {
         String refreshToken = resolveRefreshToken(request, httpRequest);
         LoginResponse response = authService.reissue(refreshToken);
@@ -86,7 +88,7 @@ public class AuthController {
         return ResponseCookie.from(REFRESH_COOKIE_NAME, token)
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("Lax")
+                .sameSite(REFRESH_COOKIE_SAME_SITE)
                 .path(REFRESH_COOKIE_PATH)
                 .maxAge(maxAgeMs / MS_TO_SECONDS)
                 .build();
@@ -96,9 +98,9 @@ public class AuthController {
         return ResponseCookie.from(REFRESH_COOKIE_NAME, "")
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("Lax")
+                .sameSite(REFRESH_COOKIE_SAME_SITE)
                 .path(REFRESH_COOKIE_PATH)
-                .maxAge(0)
+                .maxAge(EXPIRE_IMMEDIATELY)
                 .build();
     }
 
