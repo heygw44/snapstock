@@ -126,37 +126,36 @@
 
 ### JWT 인증
 
-- [ ] **M2-006** — JwtTokenProvider 구현 `@planner`
+- [x] **M2-006** — JwtTokenProvider 구현 `@planner`
   - `global/auth/JwtTokenProvider.java`
   - Access Token 생성 (30분, userId + role claim)
   - Refresh Token 생성 (14일, userId claim)
   - 토큰 파싱 + 유효성 검증
   - `resolveToken(HttpServletRequest)`: Bearer 헤더 추출
-  - JWT Secret: `application.yml`의 `jwt.secret` (환경변수 바인딩)
+  - JWT Secret: `application.yml`의 `jwt.secret` (환경변수 바인딩, fail-fast 검증)
 
-- [ ] **M2-007** — RedisConfig + 토큰 저장소
+- [x] **M2-007** — RedisConfig + 토큰 저장소
   - `global/config/RedisConfig.java`
-  - `StringRedisTemplate` Bean (토큰 저장용)
+  - `StringRedisTemplate` Bean (토큰 저장용, Spring Boot 자동 구성 사용)
   - Refresh Token 저장: `refresh:{userId}` → `refreshToken` (TTL 14일)
   - Access Token 블랙리스트: `blacklist:{sha256(accessToken)}` → `"true"` (TTL = 잔여 만료시간). 토큰 원문 대신 SHA-256 해시를 키로 사용하여 Redis 메모리 절감 및 토큰 노출 방지
   - 브라우저 클라이언트 기준 Refresh Token 전달: 쿠키 (정책: PRD §4.6 로그인 응답 참조)
 
-- [ ] **M2-008** — JwtAuthenticationFilter
+- [x] **M2-008** — JwtAuthenticationFilter
   - `global/auth/JwtAuthenticationFilter.java`
   - `OncePerRequestFilter` 상속
-  - 토큰 추출 → 블랙리스트 체크 → 유효성 검증 → `SecurityContextHolder` 설정
-  - `UserPrincipal` 구현: `userId`, `role` 보유
+  - 토큰 추출 → 유효성 검증 → 블랙리스트 체크 → `SecurityContextHolder` 설정
+  - `UserPrincipal` record: `userId`, `role` 보유
 
-- [ ] **M2-009** — SecurityConfig
+- [x] **M2-009** — SecurityConfig
   - `global/config/SecurityConfig.java`
   - CSRF disable, SessionCreationPolicy.STATELESS
-  - `/api/**` 범위 CSRF 비활성화(또는 ignoringRequestMatchers) 적용
   - `cors(withDefaults())` + `CorsConfigurationSource` 구성 (`allowedOrigins` 화이트리스트, `Authorization`/`Idempotency-Key` 헤더 허용)
-  - 기본 `allowCredentials=false`, 쿠키 재발급 환경에서만 `true`
+  - `allowCredentials=false` 명시
   - 엔드포인트별 접근 정책: PRD §5.1.3 참조 (permitAll / authenticated / hasRole("ADMIN") 규칙 정본)
   - ⚠️ reissue는 Access Token 만료 상태에서 호출되므로 permitAll. 인증은 서비스 레이어에서 Refresh Token 검증으로 대체
   - `JwtAuthenticationFilter` 등록
-  - `PasswordEncoder`: BCrypt(strength 10)
+  - `PasswordEncoder`: BCrypt(BCRYPT_STRENGTH = 10)
 
 ### 로그인/로그아웃/재발급
 
