@@ -1,3 +1,11 @@
+jwt:
+  secret: snapstock-test-secret-key-minimum-32-bytes-for-hmac-sha256
+  access-token-expiration-ms: 1800000
+  refresh-token-expiration-ms: 1209600000
+
+cors:
+  allowed-origins: http://localhost:3000
+
 spring:
   jpa:
     hibernate:
