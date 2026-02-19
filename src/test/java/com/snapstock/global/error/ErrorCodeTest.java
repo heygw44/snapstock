@@ -9,13 +9,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ErrorCodeTest {
 
     @Test
-    @DisplayName("초기 ErrorCode 4개가 존재한다")
-    void ErrorCode_초기코드_4개_존재() {
+    @DisplayName("ErrorCode 6개가 존재한다")
+    void ErrorCode_코드_6개_존재() {
         // when
         ErrorCode[] codes = ErrorCode.values();
 
         // then
-        assertThat(codes).hasSize(4);
+        assertThat(codes).hasSize(6);
     }
 
     @Test
