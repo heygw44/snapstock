@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.sql.SQLException;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -101,6 +104,43 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.fieldErrors[0].value").value(""));
     }
 
+    @Test
+    @DisplayName("이메일 unique 제약조건 위반 시 409와 DUPLICATE_EMAIL을 반환한다")
+    void DataIntegrity_이메일_unique위반_409응답() throws Exception {
+        // when
+        var result = mockMvc.perform(get("/test/data-integrity-email"));
+
+        // then
+        result.andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value("ERROR"))
+                .andExpect(jsonPath("$.errorCode").value("DUPLICATE_EMAIL"))
+                .andExpect(jsonPath("$.message").value(ErrorCode.DUPLICATE_EMAIL.getMessage()));
+    }
+
+    @Test
+    @DisplayName("닉네임 unique 제약조건 위반 시 409와 DUPLICATE_NICKNAME을 반환한다")
+    void DataIntegrity_닉네임_unique위반_409응답() throws Exception {
+        // when
+        var result = mockMvc.perform(get("/test/data-integrity-nickname"));
+
+        // then
+        result.andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value("ERROR"))
+                .andExpect(jsonPath("$.errorCode").value("DUPLICATE_NICKNAME"));
+    }
+
+    @Test
+    @DisplayName("알 수 없는 제약조건 위반 시 500과 INTERNAL_ERROR를 반환한다")
+    void DataIntegrity_알수없는_제약조건위반_500응답() throws Exception {
+        // when
+        var result = mockMvc.perform(get("/test/data-integrity-unknown"));
+
+        // then
+        result.andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value("ERROR"))
+                .andExpect(jsonPath("$.errorCode").value("INTERNAL_ERROR"));
+    }
+
     @RestController
     @RequestMapping("/test")
     static class TestController {
@@ -121,6 +161,24 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/unexpected")
         void throwUnexpectedException() {
             throw new RuntimeException("unexpected error");
+        }
+
+        @GetMapping("/data-integrity-email")
+        void throwDataIntegrityEmail() {
+            throw new DataIntegrityViolationException("could not execute statement",
+                    new SQLException("Duplicate entry 'a@b.com' for key 'users.ux_users_email'"));
+        }
+
+        @GetMapping("/data-integrity-nickname")
+        void throwDataIntegrityNickname() {
+            throw new DataIntegrityViolationException("could not execute statement",
+                    new SQLException("Duplicate entry 'nick' for key 'users.ux_users_nickname'"));
+        }
+
+        @GetMapping("/data-integrity-unknown")
+        void throwDataIntegrityUnknown() {
+            throw new DataIntegrityViolationException("could not execute statement",
+                    new SQLException("some unknown constraint violation"));
         }
     }
 

@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,10 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(name = "ux_users_email", columnNames = "email"),
+        @UniqueConstraint(name = "ux_users_nickname", columnNames = "nickname")
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
 
@@ -27,13 +31,13 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true, length = NICKNAME_MAX_LENGTH)
+    @Column(nullable = false, length = NICKNAME_MAX_LENGTH)
     private String nickname;
 
     @Enumerated(EnumType.STRING)
