@@ -6,6 +6,9 @@ import com.snapstock.domain.user.dto.UserResponse;
 import com.snapstock.domain.user.service.UserService;
 import com.snapstock.global.auth.ApiAccessDeniedHandler;
 import com.snapstock.global.auth.ApiAuthenticationEntryPoint;
+import com.snapstock.global.auth.JwtAuthenticationFilter;
+import com.snapstock.global.auth.JwtTokenProvider;
+import com.snapstock.global.auth.TokenRedisService;
 import com.snapstock.global.config.SecurityConfig;
 import com.snapstock.global.error.CustomException;
 import com.snapstock.global.error.ErrorCode;
@@ -27,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
 class AuthControllerTest {
 
     private static final String SIGNUP_URL = "/api/v1/auth/signup";
@@ -46,6 +49,12 @@ class AuthControllerTest {
 
     @MockitoBean
     private ApiAccessDeniedHandler accessDeniedHandler;
+
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider;
+
+    @MockitoBean
+    private TokenRedisService tokenRedisService;
 
     @Test
     @DisplayName("정상 회원가입 요청 시 201 응답과 유저 정보를 반환한다")
