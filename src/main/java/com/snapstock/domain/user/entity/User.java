@@ -21,6 +21,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
 
+    private static final int NICKNAME_MAX_LENGTH = 50;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,7 +33,7 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = NICKNAME_MAX_LENGTH)
     private String nickname;
 
     @Enumerated(EnumType.STRING)

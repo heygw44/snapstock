@@ -1,14 +1,13 @@
 package com.snapstock.domain.user.entity;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-@Getter
-@RequiredArgsConstructor
 public enum Role {
 
-    USER("ROLE_USER"),
-    ADMIN("ROLE_ADMIN");
+    USER,
+    ADMIN;
 
-    private final String authority;
+    private static final String ROLE_PREFIX = "ROLE_";
+
+    public String getAuthority() {
+        return ROLE_PREFIX + name();
+    }
 }

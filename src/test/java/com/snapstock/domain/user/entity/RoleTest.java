@@ -10,6 +10,8 @@ class RoleTest {
     @Test
     @DisplayName("Role은 USER와 ADMIN 2개 값을 갖는다")
     void Role_값_2개_존재() {
+        // given
+
         // when
         Role[] roles = Role.values();
 
@@ -20,6 +22,8 @@ class RoleTest {
     @Test
     @DisplayName("USER의 authority는 ROLE_USER이다")
     void USER_authority_ROLE_USER() {
+        // given
+
         // when
         String authority = Role.USER.getAuthority();
 
@@ -30,6 +34,8 @@ class RoleTest {
     @Test
     @DisplayName("ADMIN의 authority는 ROLE_ADMIN이다")
     void ADMIN_authority_ROLE_ADMIN() {
+        // given
+
         // when
         String authority = Role.ADMIN.getAuthority();
 

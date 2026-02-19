@@ -10,6 +10,8 @@ class UserTest {
     @Test
     @DisplayName("User.create로 생성하면 기본 role은 USER이다")
     void create_기본_role_USER() {
+        // given
+
         // when
         User user = User.create("test@email.com", "encodedPassword", "tester");
 
@@ -20,6 +22,8 @@ class UserTest {
     @Test
     @DisplayName("User.create로 생성하면 email, password, nickname이 설정된다")
     void create_필드_설정() {
+        // given
+
         // when
         User user = User.create("test@email.com", "encodedPassword", "tester");
 
@@ -32,6 +36,8 @@ class UserTest {
     @Test
     @DisplayName("User.create로 생성 직후 deletedAt은 null이다")
     void create_deletedAt_null() {
+        // given
+
         // when
         User user = User.create("test@email.com", "encodedPassword", "tester");
 
