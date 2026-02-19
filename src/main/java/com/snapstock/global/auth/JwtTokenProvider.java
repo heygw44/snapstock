@@ -120,7 +120,7 @@ public class JwtTokenProvider {
 
     public long getRemainingExpirationMs(String token) {
         Date expiration = parseClaims(token).getExpiration();
-        return expiration.getTime() - System.currentTimeMillis();
+        return Math.max(0, expiration.getTime() - System.currentTimeMillis());
     }
 
     public long getAccessTokenExpirationMs() {

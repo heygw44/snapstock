@@ -40,6 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (tokenRedisService.isBlacklisted(token)) {
+            log.debug("블랙리스트 토큰 접근 시도: {}", request.getRemoteAddr());
             filterChain.doFilter(request, response);
             return;
         }

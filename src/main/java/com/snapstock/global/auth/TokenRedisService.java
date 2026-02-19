@@ -17,6 +17,8 @@ public class TokenRedisService {
     private static final String REFRESH_PREFIX = "refresh:";
     private static final String BLACKLIST_PREFIX = "blacklist:";
     private static final String BLACKLIST_VALUE = "true";
+    private static final String HASH_ALGORITHM = "SHA-256";
+    private static final String HASH_ALGORITHM_UNAVAILABLE = "SHA-256 알고리즘을 사용할 수 없습니다";
 
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -45,11 +47,11 @@ public class TokenRedisService {
 
     private String hashToken(String token) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
             byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(hash);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 알고리즘을 사용할 수 없습니다", e);
+            throw new IllegalStateException(HASH_ALGORITHM_UNAVAILABLE, e);
         }
     }
 }
