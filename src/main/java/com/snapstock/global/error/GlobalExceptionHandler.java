@@ -83,6 +83,9 @@ public class GlobalExceptionHandler {
 
     private ErrorCode resolveConstraintError(DataIntegrityViolationException e) {
         String message = e.getMostSpecificCause().getMessage();
+        if (message == null) {
+            return ErrorCode.INTERNAL_ERROR;
+        }
         return CONSTRAINT_ERROR_MAP.entrySet().stream()
                 .filter(entry -> message.contains(entry.getKey()))
                 .map(Map.Entry::getValue)

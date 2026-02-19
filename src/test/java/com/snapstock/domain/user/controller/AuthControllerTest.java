@@ -153,7 +153,7 @@ class AuthControllerTest {
         result.andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value("ERROR"))
                 .andExpect(jsonPath("$.errorCode").value("DUPLICATE_EMAIL"))
-                .andExpect(jsonPath("$.message").value("이미 사용 중인 이메일입니다."));
+                .andExpect(jsonPath("$.message").value(ErrorCode.DUPLICATE_EMAIL.getMessage()));
     }
 
     @Test
@@ -175,6 +175,6 @@ class AuthControllerTest {
         result.andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value("ERROR"))
                 .andExpect(jsonPath("$.errorCode").value("DUPLICATE_NICKNAME"))
-                .andExpect(jsonPath("$.message").value("이미 사용 중인 닉네임입니다."));
+                .andExpect(jsonPath("$.message").value(ErrorCode.DUPLICATE_NICKNAME.getMessage()));
     }
 }
