@@ -97,18 +97,18 @@
 
 ### User 엔티티 + 회원가입
 
-- [ ] **M2-001** — User 엔티티 생성 `@planner`
+- [x] **M2-001** — User 엔티티 생성 `@planner`
   - `domain/user/entity/User.java`
   - 필드: `id`, `email`, `password`, `nickname`, `role`(enum USER/ADMIN), `deletedAt`
   - `BaseEntity` 상속 (createdAt 자동)
   - `role` 기본값: `Role.USER`
 
-- [ ] **M2-002** — Role enum
+- [x] **M2-002** — Role enum
   - `domain/user/entity/Role.java`
   - `USER`, `ADMIN`
   - Spring Security `GrantedAuthority` 매핑: `ROLE_USER`, `ROLE_ADMIN`
 
-- [ ] **M2-003** — UserRepository
+- [x] **M2-003** — UserRepository
   - `domain/user/repository/UserRepository.java`
   - `Optional<User> findByEmail(String email)`
   - `boolean existsByEmail(String email)`
