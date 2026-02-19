@@ -159,7 +159,7 @@
 
 ### 로그인/로그아웃/재발급
 
-- [ ] **M2-010** — 로그인 API
+- [x] **M2-010** — 로그인 API
   - `LoginRequest` record: `@Email email`, `@NotBlank password`
   - `LoginResponse` record: `accessToken`, `refreshToken`, `tokenType`("Bearer"), `expiresIn`(초 단위, 1800)
   - `AuthService.login()`: 이메일 조회 → 비밀번호 BCrypt 매칭 → 토큰 생성 → Refresh Redis 저장 (기본: body 응답)
@@ -167,14 +167,14 @@
   - `AuthController.login()`: `POST /api/v1/auth/login` → 200 OK
   - ErrorCode 추가: `LOGIN_FAILED(401)`
 
-- [ ] **M2-011** — 토큰 재발급 API
+- [x] **M2-011** — 토큰 재발급 API
   - `TokenReissueRequest` record: `String refreshToken` (body 전달 클라이언트용, nullable 허용)
   - `AuthService.reissue()`: `body.refreshToken` 우선, body 미존재 시 cookie fallback → 검증 → Redis 일치 확인 → 새 토큰 쌍 발급 → 이전 Refresh 삭제 (Rotation)
   - 입력 누락 시 `400 INVALID_INPUT`, 무효/만료 시 `401 INVALID_REFRESH_TOKEN`
   - `AuthController.reissue()`: `POST /api/v1/auth/reissue` → 200 OK
   - ErrorCode 추가: `INVALID_REFRESH_TOKEN(401)`
 
-- [ ] **M2-012** — 로그아웃 API
+- [x] **M2-012** — 로그아웃 API
   - `AuthService.logout()`: Access Token 블랙리스트 등록 + Refresh Token 삭제
   - 쿠키 모드 사용 시 Refresh 쿠키 `Max-Age=0` 만료 처리
   - `AuthController.logout()`: `POST /api/v1/auth/logout` → 204 No Content
