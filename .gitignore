@@ -78,6 +78,9 @@ docker-compose.override.yml
 ### k6 Load Test Results ###
 k6-results/
 
+### Reference Docs (local only) ###
+docs/USER_WITHDRAWAL_TOKEN_INVALIDATION_REFACTORING_GUIDE.md
+
 ### Misc ###
 HELP.md
 *.Zone.Identifier

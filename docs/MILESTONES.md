@@ -210,6 +210,7 @@
 - [x] **M2-017** — 회원 API 테스트 `@test-engineer`
   - Unit: `UserServiceTest` — 조회, 수정, 탈퇴 각 정상/실패 케이스
   - API: `UserControllerTest` — 인증 없이 접근 시 401, 정상 조회 200
+  - Integration: `UserIntegrationTest` — 전체 플로우, 프로필 조회/수정/탈퇴 end-to-end (12개)
 
 ---
 
