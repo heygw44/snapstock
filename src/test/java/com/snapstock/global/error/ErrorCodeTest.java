@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ErrorCodeTest {
 
     @Test
-    void ErrorCode_코드_9개_존재() {
+    void ErrorCode_코드_10개_존재() {
         // when
         ErrorCode[] codes = ErrorCode.values();
 

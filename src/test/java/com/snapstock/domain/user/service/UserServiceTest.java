@@ -322,5 +322,20 @@ class UserServiceTest {
                     .extracting(e -> ((CustomException) e).getErrorCode())
                     .isEqualTo(ErrorCode.USER_NOT_FOUND);
         }
+
+        @Test
+        void updateMyInfo_탈퇴한사용자_예외발생() {
+            // given
+            User deletedUser = createDeletedUser();
+            given(userRepository.findById(USER_ID)).willReturn(Optional.of(deletedUser));
+
+            UserUpdateRequest request = new UserUpdateRequest("새닉네임", null);
+
+            // when & then
+            assertThatThrownBy(() -> userService.updateMyInfo(USER_ID, request))
+                    .isInstanceOf(CustomException.class)
+                    .extracting(e -> ((CustomException) e).getErrorCode())
+                    .isEqualTo(ErrorCode.DELETED_USER);
+        }
     }
 }
