@@ -175,6 +175,48 @@ class UserServiceTest {
     }
 
     @Nested
+    class 회원탈퇴 {
+
+        @Test
+        void deleteMyAccount_정상탈퇴_softDelete호출() {
+            // given
+            User user = createTestUser();
+            given(userRepository.findById(USER_ID)).willReturn(Optional.of(user));
+
+            // when
+            userService.deleteMyAccount(USER_ID);
+
+            // then
+            assertThat(user.isDeleted()).isTrue();
+        }
+
+        @Test
+        void deleteMyAccount_존재하지않는사용자_예외발생() {
+            // given
+            given(userRepository.findById(USER_ID)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> userService.deleteMyAccount(USER_ID))
+                    .isInstanceOf(CustomException.class)
+                    .extracting(e -> ((CustomException) e).getErrorCode())
+                    .isEqualTo(ErrorCode.USER_NOT_FOUND);
+        }
+
+        @Test
+        void deleteMyAccount_이미탈퇴한사용자_예외발생() {
+            // given
+            User deletedUser = createDeletedUser();
+            given(userRepository.findById(USER_ID)).willReturn(Optional.of(deletedUser));
+
+            // when & then
+            assertThatThrownBy(() -> userService.deleteMyAccount(USER_ID))
+                    .isInstanceOf(CustomException.class)
+                    .extracting(e -> ((CustomException) e).getErrorCode())
+                    .isEqualTo(ErrorCode.DELETED_USER);
+        }
+    }
+
+    @Nested
     class 내정보수정 {
 
         @Test

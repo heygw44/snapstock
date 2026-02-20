@@ -32,6 +32,12 @@ public class UserService {
         return UserResponse.from(saved);
     }
 
+    @Transactional
+    public void deleteMyAccount(Long userId) {
+        User user = findActiveUser(userId);
+        user.softDelete();
+    }
+
     @Transactional(readOnly = true)
     public UserResponse getMyInfo(Long userId) {
         User user = findActiveUser(userId);

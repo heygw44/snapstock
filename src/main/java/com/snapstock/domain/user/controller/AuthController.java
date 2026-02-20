@@ -8,6 +8,7 @@ import com.snapstock.domain.user.dto.UserResponse;
 import com.snapstock.domain.user.service.AuthService;
 import com.snapstock.domain.user.service.UserService;
 import com.snapstock.global.auth.JwtTokenProvider;
+import com.snapstock.global.auth.RefreshCookieProvider;
 import com.snapstock.global.auth.UserPrincipal;
 import com.snapstock.global.common.ApiResponse;
 import jakarta.servlet.http.Cookie;
@@ -30,12 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private static final String REFRESH_COOKIE_NAME = "refreshToken";
-    private static final String REFRESH_COOKIE_PATH = "/api/v1/auth";
-    private static final String REFRESH_COOKIE_SAME_SITE = "Lax";
-    private static final long EXPIRE_IMMEDIATELY = 0L;
-    private static final long MS_TO_SECONDS = 1000;
-
     private final UserService userService;
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -52,7 +47,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
-        ResponseCookie cookie = createRefreshCookie(
+        ResponseCookie cookie = RefreshCookieProvider.create(
                 response.refreshToken(), jwtTokenProvider.getRefreshTokenExpirationMs());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -65,7 +60,7 @@ public class AuthController {
             HttpServletRequest httpRequest) {
         String refreshToken = resolveRefreshToken(request, httpRequest);
         LoginResponse response = authService.reissue(refreshToken);
-        ResponseCookie cookie = createRefreshCookie(
+        ResponseCookie cookie = RefreshCookieProvider.create(
                 response.refreshToken(), jwtTokenProvider.getRefreshTokenExpirationMs());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -78,29 +73,9 @@ public class AuthController {
             HttpServletRequest httpRequest) {
         String accessToken = jwtTokenProvider.resolveToken(httpRequest);
         authService.logout(accessToken, principal.userId());
-        ResponseCookie expiredCookie = expireRefreshCookie();
+        ResponseCookie expiredCookie = RefreshCookieProvider.expire();
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
-                .build();
-    }
-
-    private ResponseCookie createRefreshCookie(String token, long maxAgeMs) {
-        return ResponseCookie.from(REFRESH_COOKIE_NAME, token)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite(REFRESH_COOKIE_SAME_SITE)
-                .path(REFRESH_COOKIE_PATH)
-                .maxAge(maxAgeMs / MS_TO_SECONDS)
-                .build();
-    }
-
-    private ResponseCookie expireRefreshCookie() {
-        return ResponseCookie.from(REFRESH_COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(true)
-                .sameSite(REFRESH_COOKIE_SAME_SITE)
-                .path(REFRESH_COOKIE_PATH)
-                .maxAge(EXPIRE_IMMEDIATELY)
                 .build();
     }
 
@@ -117,7 +92,7 @@ public class AuthController {
             return null;
         }
         return Arrays.stream(cookies)
-                .filter(c -> REFRESH_COOKIE_NAME.equals(c.getName()))
+                .filter(c -> RefreshCookieProvider.COOKIE_NAME.equals(c.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElse(null);
