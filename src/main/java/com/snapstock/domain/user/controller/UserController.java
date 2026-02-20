@@ -5,6 +5,7 @@ import com.snapstock.domain.user.dto.UserResponse;
 import com.snapstock.domain.user.service.AuthService;
 import com.snapstock.domain.user.service.UserService;
 import com.snapstock.global.auth.JwtTokenProvider;
+import com.snapstock.global.auth.RefreshCookieProvider;
 import com.snapstock.global.auth.UserPrincipal;
 import com.snapstock.global.common.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,11 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
-
-    private static final String REFRESH_COOKIE_NAME = "refreshToken";
-    private static final String REFRESH_COOKIE_PATH = "/api/v1/auth";
-    private static final String REFRESH_COOKIE_SAME_SITE = "Lax";
-    private static final long EXPIRE_IMMEDIATELY = 0L;
 
     private final UserService userService;
     private final AuthService authService;
@@ -57,19 +53,9 @@ public class UserController {
         String accessToken = jwtTokenProvider.resolveToken(httpRequest);
         authService.logout(accessToken, principal.userId());
         userService.deleteMyAccount(principal.userId());
-        ResponseCookie expiredCookie = expireRefreshCookie();
+        ResponseCookie expiredCookie = RefreshCookieProvider.expire();
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
-                .build();
-    }
-
-    private ResponseCookie expireRefreshCookie() {
-        return ResponseCookie.from(REFRESH_COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(true)
-                .sameSite(REFRESH_COOKIE_SAME_SITE)
-                .path(REFRESH_COOKIE_PATH)
-                .maxAge(EXPIRE_IMMEDIATELY)
                 .build();
     }
 }
