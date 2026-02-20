@@ -106,7 +106,10 @@ class AuthIntegrationTest {
     }
 
     private String extractSetCookieHeader(MvcResult result) {
-        return result.getResponse().getHeader(HttpHeaders.SET_COOKIE);
+        return result.getResponse().getHeaders(HttpHeaders.SET_COOKIE).stream()
+                .filter(h -> h.startsWith(REFRESH_COOKIE_NAME + "="))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Refresh cookie not found"));
     }
 
     private String createExpiredToken() throws InterruptedException {
