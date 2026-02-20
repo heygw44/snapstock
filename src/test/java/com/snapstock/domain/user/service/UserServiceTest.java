@@ -116,8 +116,8 @@ class UserServiceTest {
             // given
             SignUpRequest request = new SignUpRequest(TEST_EMAIL, TEST_PASSWORD, TEST_NICKNAME);
 
-            given(userRepository.existsByEmail(anyString())).willReturn(false);
-            given(userRepository.existsByNickname(anyString())).willReturn(false);
+            given(userRepository.existsByEmail(request.email())).willReturn(false);
+            given(userRepository.existsByNickname(request.nickname())).willReturn(false);
             given(passwordEncoder.encode(request.password())).willReturn(ENCODED_PASSWORD);
             given(userRepository.save(any(User.class))).willAnswer(invocation -> invocation.getArgument(0));
 
