@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.snapstock.domain.user.dto.UserUpdateRequest;
 import com.snapstock.domain.user.dto.UserResponse;
 import com.snapstock.domain.user.entity.Role;
+import com.snapstock.domain.user.service.AuthService;
 import com.snapstock.domain.user.service.UserService;
 import com.snapstock.global.auth.ApiAccessDeniedHandler;
 import com.snapstock.global.auth.ApiAuthenticationEntryPoint;
@@ -13,10 +14,12 @@ import com.snapstock.global.auth.TokenRedisService;
 import com.snapstock.global.config.SecurityConfig;
 import com.snapstock.global.error.CustomException;
 import com.snapstock.global.error.ErrorCode;
+import org.mockito.InOrder;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -27,8 +30,12 @@ import java.time.LocalDateTime;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.inOrder;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,6 +56,9 @@ class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private AuthService authService;
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
@@ -234,6 +244,40 @@ class UserControllerTest {
             var result = mockMvc.perform(patch(MY_INFO_URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            result.andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    class 회원탈퇴 {
+
+        @Test
+        void deleteMyAccount_정상요청_204응답_쿠키초기화() throws Exception {
+            // given
+            mockAuthentication();
+
+            // when
+            var result = mockMvc.perform(delete(MY_INFO_URL)
+                    .header("Authorization", "Bearer " + ACCESS_TOKEN));
+
+            // then
+            result.andExpect(status().isNoContent())
+                    .andExpect(header().exists(HttpHeaders.SET_COOKIE))
+                    .andExpect(header().string(HttpHeaders.SET_COOKIE,
+                            org.hamcrest.Matchers.containsString("refreshToken=")))
+                    .andExpect(header().string(HttpHeaders.SET_COOKIE,
+                            org.hamcrest.Matchers.containsString("Max-Age=0")));
+            InOrder order = inOrder(authService, userService);
+            order.verify(authService).logout(ACCESS_TOKEN, USER_ID);
+            order.verify(userService).deleteMyAccount(USER_ID);
+        }
+
+        @Test
+        void deleteMyAccount_미인증_401응답() throws Exception {
+            // when
+            var result = mockMvc.perform(delete(MY_INFO_URL));
 
             // then
             result.andExpect(status().isUnauthorized());

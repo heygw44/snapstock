@@ -180,7 +180,7 @@
   - `AuthController.logout()`: `POST /api/v1/auth/logout` → 204 No Content
   - 블랙리스트 TTL = Access Token 잔여 만료시간
 
-- [ ] **M2-013** — 인증 통합 테스트 `@test-engineer`
+- [x] **M2-013** — 인증 통합 테스트 `@test-engineer`
   - 전체 플로우: 가입 → 로그인 → 인증 API 호출 → 토큰 재발급 → 로그아웃 → 블랙리스트 확인
   - Testcontainers: MySQL + Redis
   - 만료된 토큰 거부, 블랙리스트 토큰 거부, 잘못된 토큰 형식 거부
@@ -190,24 +190,24 @@
 
 ### 회원 프로필
 
-- [ ] **M2-014** — 내 정보 조회 API
+- [x] **M2-014** — 내 정보 조회 API
   - `UserResponse` record: `userId`, `email`, `nickname`, `role`, `createdAt`
   - `UserService.getMyInfo(Long userId)`
   - `UserController.getMyInfo()`: `GET /api/v1/users/me` → 200 OK
   - `@AuthenticationPrincipal UserPrincipal` 사용
 
-- [ ] **M2-015** — 내 정보 수정 API
+- [x] **M2-015** — 내 정보 수정 API
   - `UserUpdateRequest` record: `nickname`(Optional), `password`(Optional, 8~20자)
   - `UserService.updateMyInfo()`: 닉네임 변경 시 중복 체크 → 변경 필드만 업데이트
   - `UserController.updateMyInfo()`: `PATCH /api/v1/users/me` → 200 OK
 
-- [ ] **M2-016** — 회원 탈퇴 API (Soft Delete)
+- [x] **M2-016** — 회원 탈퇴 API (Soft Delete)
   - `User.softDelete()`: `this.deletedAt = LocalDateTime.now()`
   - `UserService.deleteMyAccount()`: Soft Delete + Refresh Token 삭제
   - `UserController.deleteMyAccount()`: `DELETE /api/v1/users/me` → 204 No Content
   - 탈퇴 유저 로그인 시 `DELETED_USER(401)` 에러
 
-- [ ] **M2-017** — 회원 API 테스트 `@test-engineer`
+- [x] **M2-017** — 회원 API 테스트 `@test-engineer`
   - Unit: `UserServiceTest` — 조회, 수정, 탈퇴 각 정상/실패 케이스
   - API: `UserControllerTest` — 인증 없이 접근 시 401, 정상 조회 200
 
