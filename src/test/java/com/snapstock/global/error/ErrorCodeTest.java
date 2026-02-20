@@ -13,7 +13,7 @@ class ErrorCodeTest {
         ErrorCode[] codes = ErrorCode.values();
 
         // then
-        assertThat(codes).hasSize(9);
+        assertThat(codes).hasSize(10);
     }
 
     @Test
