@@ -16,7 +16,7 @@ class ProductTest {
         @Test
         void 모든_필드가_설정된다() {
             // when
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // then
             assertThat(product.getName()).isEqualTo("상품A");
@@ -29,7 +29,7 @@ class ProductTest {
         @Test
         void deletedAt은_null이다() {
             // when
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // then
             assertThat(product.getDeletedAt()).isNull();
@@ -38,7 +38,7 @@ class ProductTest {
         @Test
         void 가격이_0이면_예외가_발생한다() {
             // when & then
-            assertThatThrownBy(() -> Product.create("상품A", "설명", 0, 50, "전자제품"))
+            assertThatThrownBy(() -> Product.create(new ProductCommand("상품A", "설명", 0, 50, "전자제품")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("가격은 0보다 커야 합니다.");
         }
@@ -46,7 +46,7 @@ class ProductTest {
         @Test
         void 음수_가격이면_예외가_발생한다() {
             // when & then
-            assertThatThrownBy(() -> Product.create("상품A", "설명", -1, 50, "전자제품"))
+            assertThatThrownBy(() -> Product.create(new ProductCommand("상품A", "설명", -1, 50, "전자제품")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("가격은 0보다 커야 합니다.");
         }
@@ -54,7 +54,7 @@ class ProductTest {
         @Test
         void 음수_재고이면_예외가_발생한다() {
             // when & then
-            assertThatThrownBy(() -> Product.create("상품A", "설명", 10000, -1, "전자제품"))
+            assertThatThrownBy(() -> Product.create(new ProductCommand("상품A", "설명", 10000, -1, "전자제품")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("재고는 0 이상이어야 합니다.");
         }
@@ -62,7 +62,7 @@ class ProductTest {
         @Test
         void 상품명이_null이면_예외가_발생한다() {
             // when & then
-            assertThatThrownBy(() -> Product.create(null, "설명", 10000, 50, "전자제품"))
+            assertThatThrownBy(() -> Product.create(new ProductCommand(null, "설명", 10000, 50, "전자제품")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("상품명은 필수입니다.");
         }
@@ -70,7 +70,7 @@ class ProductTest {
         @Test
         void 상품명이_빈값이면_예외가_발생한다() {
             // when & then
-            assertThatThrownBy(() -> Product.create("  ", "설명", 10000, 50, "전자제품"))
+            assertThatThrownBy(() -> Product.create(new ProductCommand("  ", "설명", 10000, 50, "전자제품")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("상품명은 필수입니다.");
         }
@@ -78,7 +78,7 @@ class ProductTest {
         @Test
         void 카테고리가_null이면_예외가_발생한다() {
             // when & then
-            assertThatThrownBy(() -> Product.create("상품A", "설명", 10000, 50, null))
+            assertThatThrownBy(() -> Product.create(new ProductCommand("상품A", "설명", 10000, 50, null)))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("카테고리는 필수입니다.");
         }
@@ -86,7 +86,7 @@ class ProductTest {
         @Test
         void 카테고리가_빈값이면_예외가_발생한다() {
             // when & then
-            assertThatThrownBy(() -> Product.create("상품A", "설명", 10000, 50, ""))
+            assertThatThrownBy(() -> Product.create(new ProductCommand("상품A", "설명", 10000, 50, "")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("카테고리는 필수입니다.");
         }
@@ -98,10 +98,10 @@ class ProductTest {
         @Test
         void 모든_필드가_변경된다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when
-            product.update("상품B", "새 설명", 20000, 100, "의류");
+            product.update(new ProductCommand("상품B", "새 설명", 20000, 100, "의류"));
 
             // then
             assertThat(product.getName()).isEqualTo("상품B");
@@ -114,10 +114,10 @@ class ProductTest {
         @Test
         void 가격0으로_수정하면_예외가_발생한다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when & then
-            assertThatThrownBy(() -> product.update("상품B", "새 설명", 0, 100, "의류"))
+            assertThatThrownBy(() -> product.update(new ProductCommand("상품B", "새 설명", 0, 100, "의류")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("가격은 0보다 커야 합니다.");
         }
@@ -125,10 +125,10 @@ class ProductTest {
         @Test
         void 음수_가격으로_수정하면_예외가_발생한다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when & then
-            assertThatThrownBy(() -> product.update("상품B", "새 설명", -1, 100, "의류"))
+            assertThatThrownBy(() -> product.update(new ProductCommand("상품B", "새 설명", -1, 100, "의류")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("가격은 0보다 커야 합니다.");
         }
@@ -136,10 +136,10 @@ class ProductTest {
         @Test
         void 음수_재고로_수정하면_예외가_발생한다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when & then
-            assertThatThrownBy(() -> product.update("상품B", "새 설명", 20000, -1, "의류"))
+            assertThatThrownBy(() -> product.update(new ProductCommand("상품B", "새 설명", 20000, -1, "의류")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("재고는 0 이상이어야 합니다.");
         }
@@ -147,10 +147,10 @@ class ProductTest {
         @Test
         void 상품명null로_수정하면_예외가_발생한다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when & then
-            assertThatThrownBy(() -> product.update(null, "새 설명", 20000, 100, "의류"))
+            assertThatThrownBy(() -> product.update(new ProductCommand(null, "새 설명", 20000, 100, "의류")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("상품명은 필수입니다.");
         }
@@ -158,10 +158,10 @@ class ProductTest {
         @Test
         void 상품명빈값으로_수정하면_예외가_발생한다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when & then
-            assertThatThrownBy(() -> product.update("  ", "새 설명", 20000, 100, "의류"))
+            assertThatThrownBy(() -> product.update(new ProductCommand("  ", "새 설명", 20000, 100, "의류")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("상품명은 필수입니다.");
         }
@@ -169,10 +169,10 @@ class ProductTest {
         @Test
         void 카테고리null로_수정하면_예외가_발생한다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when & then
-            assertThatThrownBy(() -> product.update("상품B", "새 설명", 20000, 100, null))
+            assertThatThrownBy(() -> product.update(new ProductCommand("상품B", "새 설명", 20000, 100, null)))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("카테고리는 필수입니다.");
         }
@@ -180,10 +180,10 @@ class ProductTest {
         @Test
         void 카테고리빈값으로_수정하면_예외가_발생한다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when & then
-            assertThatThrownBy(() -> product.update("상품B", "새 설명", 20000, 100, ""))
+            assertThatThrownBy(() -> product.update(new ProductCommand("상품B", "새 설명", 20000, 100, "")))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("카테고리는 필수입니다.");
         }
@@ -195,7 +195,7 @@ class ProductTest {
         @Test
         void deletedAt이_설정된다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when
             product.softDelete();
@@ -207,7 +207,7 @@ class ProductTest {
         @Test
         void 이미_삭제된_상품은_deletedAt이_변경되지_않는다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
             product.softDelete();
             LocalDateTime firstDeletedAt = product.getDeletedAt();
 
@@ -221,7 +221,7 @@ class ProductTest {
         @Test
         void isDeleted가_true를_반환한다() {
             // given
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // when
             product.softDelete();
@@ -237,7 +237,7 @@ class ProductTest {
         @Test
         void 생성_직후_false를_반환한다() {
             // when
-            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            Product product = Product.create(new ProductCommand("상품A", "설명", 10000, 50, "전자제품"));
 
             // then
             assertThat(product.isDeleted()).isFalse();

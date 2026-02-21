@@ -3,6 +3,7 @@ package com.snapstock.domain.product.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.snapstock.domain.product.dto.ProductCreateRequest;
 import com.snapstock.domain.product.dto.ProductResponse;
+import com.snapstock.domain.product.dto.ProductUpdateRequest;
 import com.snapstock.domain.product.service.ProductService;
 import com.snapstock.domain.user.entity.Role;
 import com.snapstock.global.auth.ApiAccessDeniedHandler;
@@ -11,6 +12,8 @@ import com.snapstock.global.auth.JwtAuthenticationFilter;
 import com.snapstock.global.auth.JwtTokenProvider;
 import com.snapstock.global.auth.TokenRedisService;
 import com.snapstock.global.config.SecurityConfig;
+import com.snapstock.global.error.CustomException;
+import com.snapstock.global.error.ErrorCode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +26,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -242,6 +247,139 @@ class AdminProductControllerTest {
                     .andExpect(jsonPath("$.errorCode").value("INVALID_INPUT"))
                     .andExpect(jsonPath("$.fieldErrors").isArray())
                     .andExpect(jsonPath("$.fieldErrors[?(@.field == 'category')]").exists());
+        }
+    }
+
+    @Nested
+    class Update {
+
+        private static final Long PRODUCT_ID = 1L;
+        private static final String UPDATE_URL = ADMIN_PRODUCTS_URL + "/" + PRODUCT_ID;
+
+        @Test
+        void update_ADMIN권한_정상요청_200응답() throws Exception {
+            // given
+            setupAdminAuth();
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    "수정 상품", null, 20000, null, null);
+            ProductResponse response = new ProductResponse(
+                    PRODUCT_ID, "수정 상품", "설명", 20000, 100, "전자기기", LocalDateTime.now());
+
+            given(productService.updateProduct(eq(PRODUCT_ID), any(ProductUpdateRequest.class)))
+                    .willReturn(response);
+
+            // when
+            var result = mockMvc.perform(patch(UPDATE_URL)
+                    .header("Authorization", "Bearer " + ADMIN_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            result.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value("SUCCESS"))
+                    .andExpect(jsonPath("$.data.productId").value(PRODUCT_ID))
+                    .andExpect(jsonPath("$.data.name").value("수정 상품"))
+                    .andExpect(jsonPath("$.data.originalPrice").value(20000));
+        }
+
+        @Test
+        void update_USER권한_403응답() throws Exception {
+            // given
+            setupUserAuth();
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    "수정 상품", null, null, null, null);
+
+            // when
+            var result = mockMvc.perform(patch(UPDATE_URL)
+                    .header("Authorization", "Bearer " + USER_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            result.andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"));
+        }
+
+        @Test
+        void update_미인증_401응답() throws Exception {
+            // given
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    "수정 상품", null, null, null, null);
+
+            // when
+            var result = mockMvc.perform(patch(UPDATE_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            result.andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
+        }
+
+        @Test
+        void update_상품없음_404응답() throws Exception {
+            // given
+            setupAdminAuth();
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    "수정 상품", null, null, null, null);
+
+            given(productService.updateProduct(eq(PRODUCT_ID), any(ProductUpdateRequest.class)))
+                    .willThrow(new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+            // when
+            var result = mockMvc.perform(patch(UPDATE_URL)
+                    .header("Authorization", "Bearer " + ADMIN_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            result.andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("PRODUCT_NOT_FOUND"));
+        }
+
+        @Test
+        void update_가격음수_400응답() throws Exception {
+            // given
+            setupAdminAuth();
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    null, null, -1000, null, null);
+
+            // when
+            var result = mockMvc.perform(patch(UPDATE_URL)
+                    .header("Authorization", "Bearer " + ADMIN_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            result.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("INVALID_INPUT"))
+                    .andExpect(jsonPath("$.fieldErrors").isArray())
+                    .andExpect(jsonPath("$.fieldErrors[?(@.field == 'originalPrice')]").exists());
+        }
+
+        @Test
+        void update_빈바디_400응답() throws Exception {
+            // given
+            setupAdminAuth();
+            String emptyJson = "{}";
+
+            given(productService.updateProduct(eq(PRODUCT_ID), any(ProductUpdateRequest.class)))
+                    .willThrow(new CustomException(ErrorCode.INVALID_INPUT));
+
+            // when
+            var result = mockMvc.perform(patch(UPDATE_URL)
+                    .header("Authorization", "Bearer " + ADMIN_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(emptyJson));
+
+            // then
+            result.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("INVALID_INPUT"));
         }
     }
 }

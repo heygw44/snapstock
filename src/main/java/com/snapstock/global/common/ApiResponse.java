@@ -25,6 +25,10 @@ public record ApiResponse<T>(
         return new ApiResponse<>(STATUS_ERROR, null, code.getMessage(), code.name(), null);
     }
 
+    public static ApiResponse<Void> error(ErrorCode code, String message) {
+        return new ApiResponse<>(STATUS_ERROR, null, message, code.name(), null);
+    }
+
     public static ApiResponse<Void> validationError(List<FieldErrorResponse> fieldErrors) {
         return new ApiResponse<>(
                 STATUS_ERROR,

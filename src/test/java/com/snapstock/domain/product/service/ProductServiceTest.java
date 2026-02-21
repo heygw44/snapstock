@@ -2,8 +2,12 @@ package com.snapstock.domain.product.service;
 
 import com.snapstock.domain.product.dto.ProductCreateRequest;
 import com.snapstock.domain.product.dto.ProductResponse;
+import com.snapstock.domain.product.dto.ProductUpdateRequest;
 import com.snapstock.domain.product.entity.Product;
+import com.snapstock.domain.product.entity.ProductCommand;
 import com.snapstock.domain.product.repository.ProductRepository;
+import com.snapstock.global.error.CustomException;
+import com.snapstock.global.error.ErrorCode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,8 +43,8 @@ class ProductServiceTest {
     private ProductService productService;
 
     private Product createTestProduct() {
-        Product product = Product.create(
-                PRODUCT_NAME, PRODUCT_DESCRIPTION, ORIGINAL_PRICE, STOCK, CATEGORY);
+        Product product = Product.create(new ProductCommand(
+                PRODUCT_NAME, PRODUCT_DESCRIPTION, ORIGINAL_PRICE, STOCK, CATEGORY));
         ReflectionTestUtils.setField(product, "id", PRODUCT_ID);
         ReflectionTestUtils.setField(product, "createdAt", LocalDateTime.now());
         return product;
@@ -78,8 +83,123 @@ class ProductServiceTest {
 
             // when & then
             assertThatThrownBy(() -> productService.createProduct(request))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(CustomException.class)
+                    .satisfies(ex -> assertThat(((CustomException) ex).getErrorCode())
+                            .isEqualTo(ErrorCode.INVALID_INPUT));
             then(productRepository).should(never()).save(any(Product.class));
+        }
+    }
+
+    @Nested
+    class UpdateProduct {
+
+        @Test
+        void updateProduct_이름만변경_나머지유지() {
+            // given
+            Product product = createTestProduct();
+            String newName = "변경된 상품명";
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    newName, null, null, null, null);
+
+            given(productRepository.findByIdAndDeletedAtIsNull(PRODUCT_ID))
+                    .willReturn(Optional.of(product));
+
+            // when
+            ProductResponse response = productService.updateProduct(PRODUCT_ID, request);
+
+            // then
+            assertThat(response.name()).isEqualTo(newName);
+            assertThat(response.description()).isEqualTo(PRODUCT_DESCRIPTION);
+            assertThat(response.originalPrice()).isEqualTo(ORIGINAL_PRICE);
+            assertThat(response.stock()).isEqualTo(STOCK);
+            assertThat(response.category()).isEqualTo(CATEGORY);
+        }
+
+        @Test
+        void updateProduct_모든필드변경() {
+            // given
+            Product product = createTestProduct();
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    "새 이름", "새 설명", 20000, 200, "의류");
+
+            given(productRepository.findByIdAndDeletedAtIsNull(PRODUCT_ID))
+                    .willReturn(Optional.of(product));
+
+            // when
+            ProductResponse response = productService.updateProduct(PRODUCT_ID, request);
+
+            // then
+            assertThat(response.name()).isEqualTo("새 이름");
+            assertThat(response.description()).isEqualTo("새 설명");
+            assertThat(response.originalPrice()).isEqualTo(20000);
+            assertThat(response.stock()).isEqualTo(200);
+            assertThat(response.category()).isEqualTo("의류");
+        }
+
+        @Test
+        void updateProduct_상품없음_예외발생() {
+            // given
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    "새 이름", null, null, null, null);
+
+            given(productRepository.findByIdAndDeletedAtIsNull(PRODUCT_ID))
+                    .willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request))
+                    .isInstanceOf(CustomException.class)
+                    .satisfies(ex -> assertThat(((CustomException) ex).getErrorCode())
+                            .isEqualTo(ErrorCode.PRODUCT_NOT_FOUND));
+        }
+
+        @Test
+        void updateProduct_빈바디_예외발생() {
+            // given
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    null, null, null, null, null);
+
+            // when & then
+            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request))
+                    .isInstanceOf(CustomException.class)
+                    .satisfies(ex -> assertThat(((CustomException) ex).getErrorCode())
+                            .isEqualTo(ErrorCode.INVALID_INPUT));
+        }
+
+        @Test
+        void updateProduct_이름빈값_예외발생() {
+            // given
+            Product product = createTestProduct();
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    "  ", null, null, null, null);
+
+            given(productRepository.findByIdAndDeletedAtIsNull(PRODUCT_ID))
+                    .willReturn(Optional.of(product));
+
+            // when & then
+            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request))
+                    .isInstanceOf(CustomException.class)
+                    .satisfies(ex -> assertThat(((CustomException) ex).getErrorCode())
+                            .isEqualTo(ErrorCode.INVALID_INPUT));
+        }
+
+        @Test
+        void updateProduct_재고음수_도메인예외를CustomException으로변환() {
+            // given
+            Product product = createTestProduct();
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    null, null, null, -1, null);
+
+            given(productRepository.findByIdAndDeletedAtIsNull(PRODUCT_ID))
+                    .willReturn(Optional.of(product));
+
+            // when & then
+            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request))
+                    .isInstanceOf(CustomException.class)
+                    .satisfies(ex -> {
+                        CustomException ce = (CustomException) ex;
+                        assertThat(ce.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT);
+                        assertThat(ce.getMessage()).isEqualTo("재고는 0 이상이어야 합니다.");
+                    });
         }
     }
 }

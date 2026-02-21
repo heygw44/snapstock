@@ -22,8 +22,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
-    private static final int NAME_MAX_LENGTH = 255;
-    private static final int CATEGORY_MAX_LENGTH = 100;
+    public static final int NAME_MAX_LENGTH = 255;
+    public static final int CATEGORY_MAX_LENGTH = 100;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,35 +46,16 @@ public class Product extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    private Product(String name, String description, int originalPrice,
-                    int stock, String category) {
-        validateName(name);
-        validateCategory(category);
-        validatePrice(originalPrice);
-        validateStock(stock);
-        this.name = name;
-        this.description = description;
-        this.originalPrice = originalPrice;
-        this.stock = stock;
-        this.category = category;
+    private Product(ProductCommand command) {
+        applyCommand(command);
     }
 
-    public static Product create(String name, String description, int originalPrice,
-                                  int stock, String category) {
-        return new Product(name, description, originalPrice, stock, category);
+    public static Product create(ProductCommand command) {
+        return new Product(command);
     }
 
-    public void update(String name, String description, int originalPrice,
-                       int stock, String category) {
-        validateName(name);
-        validateCategory(category);
-        validatePrice(originalPrice);
-        validateStock(stock);
-        this.name = name;
-        this.description = description;
-        this.originalPrice = originalPrice;
-        this.stock = stock;
-        this.category = category;
+    public void update(ProductCommand command) {
+        applyCommand(command);
     }
 
     public void softDelete() {
@@ -88,9 +69,25 @@ public class Product extends BaseEntity {
         return this.deletedAt != null;
     }
 
+    private void applyCommand(ProductCommand command) {
+        validateName(command.name());
+        validateCategory(command.category());
+        validatePrice(command.originalPrice());
+        validateStock(command.stock());
+        this.name = command.name();
+        this.description = command.description();
+        this.originalPrice = command.originalPrice();
+        this.stock = command.stock();
+        this.category = command.category();
+    }
+
     private static void validateName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("상품명은 필수입니다.");
+        }
+        if (name.length() > NAME_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "상품명은 " + NAME_MAX_LENGTH + "자 이하여야 합니다.");
         }
     }
 
@@ -98,15 +95,25 @@ public class Product extends BaseEntity {
         if (category == null || category.isBlank()) {
             throw new IllegalArgumentException("카테고리는 필수입니다.");
         }
+        if (category.length() > CATEGORY_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "카테고리는 " + CATEGORY_MAX_LENGTH + "자 이하여야 합니다.");
+        }
     }
 
-    private static void validatePrice(int price) {
+    private static void validatePrice(Integer price) {
+        if (price == null) {
+            throw new IllegalArgumentException("가격은 필수입니다.");
+        }
         if (price <= 0) {
             throw new IllegalArgumentException("가격은 0보다 커야 합니다.");
         }
     }
 
-    private static void validateStock(int stock) {
+    private static void validateStock(Integer stock) {
+        if (stock == null) {
+            throw new IllegalArgumentException("재고는 필수입니다.");
+        }
         if (stock < 0) {
             throw new IllegalArgumentException("재고는 0 이상이어야 합니다.");
         }
