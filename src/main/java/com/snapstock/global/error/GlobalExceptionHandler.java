@@ -73,6 +73,15 @@ public class GlobalExceptionHandler {
                 error.getDefaultMessage());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    protected ResponseEntity<ApiResponse<Void>> handleIllegalArgument(
+            IllegalArgumentException e) {
+        log.warn("Invalid argument: {}", e.getMessage());
+        return ResponseEntity
+                .badRequest()
+                .body(ApiResponse.error(ErrorCode.INVALID_INPUT));
+    }
+
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
         log.error("Unexpected exception: ", e);

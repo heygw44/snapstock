@@ -46,8 +46,8 @@ public class Product extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    private Product(String name, String description, int originalPrice,
-                    int stock, String category) {
+    private Product(String name, String description, Integer originalPrice,
+                    Integer stock, String category) {
         validateName(name);
         validateCategory(category);
         validatePrice(originalPrice);
@@ -59,13 +59,13 @@ public class Product extends BaseEntity {
         this.category = category;
     }
 
-    public static Product create(String name, String description, int originalPrice,
-                                  int stock, String category) {
+    public static Product create(String name, String description, Integer originalPrice,
+                                  Integer stock, String category) {
         return new Product(name, description, originalPrice, stock, category);
     }
 
-    public void update(String name, String description, int originalPrice,
-                       int stock, String category) {
+    public void update(String name, String description, Integer originalPrice,
+                       Integer stock, String category) {
         validateName(name);
         validateCategory(category);
         validatePrice(originalPrice);
@@ -92,22 +92,30 @@ public class Product extends BaseEntity {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("상품명은 필수입니다.");
         }
+        if (name.length() > NAME_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "상품명은 " + NAME_MAX_LENGTH + "자 이하여야 합니다.");
+        }
     }
 
     private static void validateCategory(String category) {
         if (category == null || category.isBlank()) {
             throw new IllegalArgumentException("카테고리는 필수입니다.");
         }
+        if (category.length() > CATEGORY_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "카테고리는 " + CATEGORY_MAX_LENGTH + "자 이하여야 합니다.");
+        }
     }
 
-    private static void validatePrice(int price) {
-        if (price <= 0) {
+    private static void validatePrice(Integer price) {
+        if (price == null || price <= 0) {
             throw new IllegalArgumentException("가격은 0보다 커야 합니다.");
         }
     }
 
-    private static void validateStock(int stock) {
-        if (stock < 0) {
+    private static void validateStock(Integer stock) {
+        if (stock == null || stock < 0) {
             throw new IllegalArgumentException("재고는 0 이상이어야 합니다.");
         }
     }
