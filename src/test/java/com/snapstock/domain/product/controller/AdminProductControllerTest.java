@@ -202,6 +202,28 @@ class AdminProductControllerTest {
         }
 
         @Test
+        void create_가격누락_400응답() throws Exception {
+            // given
+            setupAdminAuth();
+            String jsonWithoutPrice = """
+                    {"name": "테스트 상품", "description": "설명", "stock": 100, "category": "전자기기"}
+                    """;
+
+            // when
+            var result = mockMvc.perform(post(ADMIN_PRODUCTS_URL)
+                    .header("Authorization", "Bearer " + ADMIN_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(jsonWithoutPrice));
+
+            // then
+            result.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("INVALID_INPUT"))
+                    .andExpect(jsonPath("$.fieldErrors").isArray())
+                    .andExpect(jsonPath("$.fieldErrors[?(@.field == 'originalPrice')]").exists());
+        }
+
+        @Test
         void create_카테고리빈값_400응답() throws Exception {
             // given
             setupAdminAuth();

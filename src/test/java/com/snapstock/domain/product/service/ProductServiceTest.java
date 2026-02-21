@@ -15,9 +15,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -66,6 +68,18 @@ class ProductServiceTest {
             assertThat(response.stock()).isEqualTo(STOCK);
             assertThat(response.category()).isEqualTo(CATEGORY);
             then(productRepository).should().save(any(Product.class));
+        }
+
+        @Test
+        void createProduct_가격이_0이면_예외발생() {
+            // given
+            ProductCreateRequest request = new ProductCreateRequest(
+                    PRODUCT_NAME, PRODUCT_DESCRIPTION, 0, STOCK, CATEGORY);
+
+            // when & then
+            assertThatThrownBy(() -> productService.createProduct(request))
+                    .isInstanceOf(IllegalArgumentException.class);
+            then(productRepository).should(never()).save(any(Product.class));
         }
     }
 }
