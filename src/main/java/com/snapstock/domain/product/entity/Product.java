@@ -48,6 +48,8 @@ public class Product extends BaseEntity {
 
     private Product(String name, String description, int originalPrice,
                     int stock, String category) {
+        validateName(name);
+        validateCategory(category);
         validatePrice(originalPrice);
         validateStock(stock);
         this.name = name;
@@ -64,6 +66,8 @@ public class Product extends BaseEntity {
 
     public void update(String name, String description, int originalPrice,
                        int stock, String category) {
+        validateName(name);
+        validateCategory(category);
         validatePrice(originalPrice);
         validateStock(stock);
         this.name = name;
@@ -84,9 +88,21 @@ public class Product extends BaseEntity {
         return this.deletedAt != null;
     }
 
+    private static void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("상품명은 필수입니다.");
+        }
+    }
+
+    private static void validateCategory(String category) {
+        if (category == null || category.isBlank()) {
+            throw new IllegalArgumentException("카테고리는 필수입니다.");
+        }
+    }
+
     private static void validatePrice(int price) {
-        if (price < 0) {
-            throw new IllegalArgumentException("가격은 0 이상이어야 합니다.");
+        if (price <= 0) {
+            throw new IllegalArgumentException("가격은 0보다 커야 합니다.");
         }
     }
 

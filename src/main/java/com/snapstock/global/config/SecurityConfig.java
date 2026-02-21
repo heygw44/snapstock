@@ -20,6 +20,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.http.HttpMethod;
+
 import java.util.List;
 
 @Configuration
@@ -33,6 +35,9 @@ public class SecurityConfig {
     private static final String AUTH_SIGNUP = "/api/v1/auth/signup";
     private static final String AUTH_LOGIN = "/api/v1/auth/login";
     private static final String AUTH_REISSUE = "/api/v1/auth/reissue";
+    private static final String ADMIN_API_PATTERN = "/api/v1/admin/**";
+    private static final String PRODUCTS_API = "/api/v1/products";
+    private static final String PRODUCTS_API_PATTERN = "/api/v1/products/**";
 
     private final ApiAuthenticationEntryPoint authenticationEntryPoint;
     private final ApiAccessDeniedHandler accessDeniedHandler;
@@ -51,6 +56,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(ACTUATOR_HEALTH, ACTUATOR_HEALTH_PATTERN).permitAll()
                 .requestMatchers(AUTH_SIGNUP, AUTH_LOGIN, AUTH_REISSUE).permitAll()
+                .requestMatchers(HttpMethod.GET, PRODUCTS_API, PRODUCTS_API_PATTERN).permitAll()
+                .requestMatchers(ADMIN_API_PATTERN).hasRole("ADMIN")
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class);
