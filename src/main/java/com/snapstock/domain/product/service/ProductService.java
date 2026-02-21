@@ -28,6 +28,13 @@ public class ProductService {
     }
 
     @Transactional
+    public void deleteProduct(Long productId) {
+        Product product = findActiveProduct(productId);
+        // TODO [M4]: TimeDeal 도메인 구현 후 OPEN/UPCOMING 타임딜 존재 시 PRODUCT_HAS_ACTIVE_DEAL(409) 체크 추가
+        product.softDelete();
+    }
+
+    @Transactional
     public ProductResponse updateProduct(Long productId, ProductUpdateRequest request) {
         validateAtLeastOneFieldProvided(request);
         Product product = findActiveProduct(productId);
