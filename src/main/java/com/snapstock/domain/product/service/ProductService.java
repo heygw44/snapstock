@@ -60,17 +60,23 @@ public class ProductService {
 
     private void validateNameIfPresent(String name) {
         if (name == null) { return; }
-        if (name.isBlank()) { throw new CustomException(ErrorCode.INVALID_INPUT); }
+        if (name.isBlank()) {
+            throw new CustomException(ErrorCode.INVALID_INPUT, "상품명은 공백일 수 없습니다.");
+        }
         if (name.length() > Product.NAME_MAX_LENGTH) {
-            throw new CustomException(ErrorCode.INVALID_INPUT);
+            throw new CustomException(ErrorCode.INVALID_INPUT,
+                    "상품명은 " + Product.NAME_MAX_LENGTH + "자 이하여야 합니다.");
         }
     }
 
     private void validateCategoryIfPresent(String category) {
         if (category == null) { return; }
-        if (category.isBlank()) { throw new CustomException(ErrorCode.INVALID_INPUT); }
+        if (category.isBlank()) {
+            throw new CustomException(ErrorCode.INVALID_INPUT, "카테고리는 공백일 수 없습니다.");
+        }
         if (category.length() > Product.CATEGORY_MAX_LENGTH) {
-            throw new CustomException(ErrorCode.INVALID_INPUT);
+            throw new CustomException(ErrorCode.INVALID_INPUT,
+                    "카테고리는 " + Product.CATEGORY_MAX_LENGTH + "자 이하여야 합니다.");
         }
     }
 
@@ -78,7 +84,7 @@ public class ProductService {
         try {
             return Product.create(command);
         } catch (IllegalArgumentException e) {
-            throw new CustomException(ErrorCode.INVALID_INPUT);
+            throw new CustomException(ErrorCode.INVALID_INPUT, e.getMessage());
         }
     }
 
@@ -86,7 +92,7 @@ public class ProductService {
         try {
             product.update(command);
         } catch (IllegalArgumentException e) {
-            throw new CustomException(ErrorCode.INVALID_INPUT);
+            throw new CustomException(ErrorCode.INVALID_INPUT, e.getMessage());
         }
     }
 

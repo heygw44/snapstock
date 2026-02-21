@@ -181,5 +181,25 @@ class ProductServiceTest {
                     .satisfies(ex -> assertThat(((CustomException) ex).getErrorCode())
                             .isEqualTo(ErrorCode.INVALID_INPUT));
         }
+
+        @Test
+        void updateProduct_재고음수_도메인예외를CustomException으로변환() {
+            // given
+            Product product = createTestProduct();
+            ProductUpdateRequest request = new ProductUpdateRequest(
+                    null, null, null, -1, null);
+
+            given(productRepository.findByIdAndDeletedAtIsNull(PRODUCT_ID))
+                    .willReturn(Optional.of(product));
+
+            // when & then
+            assertThatThrownBy(() -> productService.updateProduct(PRODUCT_ID, request))
+                    .isInstanceOf(CustomException.class)
+                    .satisfies(ex -> {
+                        CustomException ce = (CustomException) ex;
+                        assertThat(ce.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT);
+                        assertThat(ce.getMessage()).isEqualTo("재고는 0 이상이어야 합니다.");
+                    });
+        }
     }
 }
