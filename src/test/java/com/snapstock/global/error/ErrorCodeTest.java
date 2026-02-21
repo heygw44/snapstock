@@ -8,12 +8,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ErrorCodeTest {
 
     @Test
-    void ErrorCode_코드_10개_존재() {
+    void ErrorCode_코드_12개_존재() {
         // when
         ErrorCode[] codes = ErrorCode.values();
 
         // then
-        assertThat(codes).hasSize(10);
+        assertThat(codes).hasSize(12);
     }
 
     @Test
