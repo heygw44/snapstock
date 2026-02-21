@@ -18,9 +18,11 @@ public enum ErrorCode {
     DELETED_USER(HttpStatus.UNAUTHORIZED, "탈퇴한 계정입니다."),
 
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
 
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
-    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다.");
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
+    PRODUCT_HAS_ACTIVE_DEAL(HttpStatus.CONFLICT, "진행 중인 타임딜이 있는 상품은 삭제할 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
