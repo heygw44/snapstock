@@ -91,6 +91,39 @@ class ProductServiceTest {
     }
 
     @Nested
+    class DeleteProduct {
+
+        @Test
+        void deleteProduct_정상요청_softDelete처리() {
+            // given
+            Product product = createTestProduct();
+
+            given(productRepository.findByIdAndDeletedAtIsNull(PRODUCT_ID))
+                    .willReturn(Optional.of(product));
+
+            // when
+            productService.deleteProduct(PRODUCT_ID);
+
+            // then
+            assertThat(product.isDeleted()).isTrue();
+            then(productRepository).should(never()).delete(any(Product.class));
+        }
+
+        @Test
+        void deleteProduct_상품없음_예외발생() {
+            // given
+            given(productRepository.findByIdAndDeletedAtIsNull(PRODUCT_ID))
+                    .willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID))
+                    .isInstanceOf(CustomException.class)
+                    .satisfies(ex -> assertThat(((CustomException) ex).getErrorCode())
+                            .isEqualTo(ErrorCode.PRODUCT_NOT_FOUND));
+        }
+    }
+
+    @Nested
     class UpdateProduct {
 
         @Test

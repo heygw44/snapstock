@@ -28,6 +28,9 @@ import java.time.LocalDateTime;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -247,6 +250,87 @@ class AdminProductControllerTest {
                     .andExpect(jsonPath("$.errorCode").value("INVALID_INPUT"))
                     .andExpect(jsonPath("$.fieldErrors").isArray())
                     .andExpect(jsonPath("$.fieldErrors[?(@.field == 'category')]").exists());
+        }
+    }
+
+    @Nested
+    class Delete {
+
+        private static final Long PRODUCT_ID = 1L;
+        private static final String DELETE_URL = ADMIN_PRODUCTS_URL + "/" + PRODUCT_ID;
+
+        @Test
+        void delete_ADMIN권한_정상요청_204응답() throws Exception {
+            // given
+            setupAdminAuth();
+            willDoNothing().given(productService).deleteProduct(PRODUCT_ID);
+
+            // when
+            var result = mockMvc.perform(delete(DELETE_URL)
+                    .header("Authorization", "Bearer " + ADMIN_TOKEN));
+
+            // then
+            result.andExpect(status().isNoContent());
+        }
+
+        @Test
+        void delete_USER권한_403응답() throws Exception {
+            // given
+            setupUserAuth();
+
+            // when
+            var result = mockMvc.perform(delete(DELETE_URL)
+                    .header("Authorization", "Bearer " + USER_TOKEN));
+
+            // then
+            result.andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"));
+        }
+
+        @Test
+        void delete_미인증_401응답() throws Exception {
+            // when
+            var result = mockMvc.perform(delete(DELETE_URL));
+
+            // then
+            result.andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
+        }
+
+        @Test
+        void delete_상품없음_404응답() throws Exception {
+            // given
+            setupAdminAuth();
+            willThrow(new CustomException(ErrorCode.PRODUCT_NOT_FOUND))
+                    .given(productService).deleteProduct(PRODUCT_ID);
+
+            // when
+            var result = mockMvc.perform(delete(DELETE_URL)
+                    .header("Authorization", "Bearer " + ADMIN_TOKEN));
+
+            // then
+            result.andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("PRODUCT_NOT_FOUND"));
+        }
+
+        @Test
+        void delete_진행중인타임딜존재_409응답() throws Exception {
+            // given
+            setupAdminAuth();
+            willThrow(new CustomException(ErrorCode.PRODUCT_HAS_ACTIVE_DEAL))
+                    .given(productService).deleteProduct(PRODUCT_ID);
+
+            // when
+            var result = mockMvc.perform(delete(DELETE_URL)
+                    .header("Authorization", "Bearer " + ADMIN_TOKEN));
+
+            // then
+            result.andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.status").value("ERROR"))
+                    .andExpect(jsonPath("$.errorCode").value("PRODUCT_HAS_ACTIVE_DEAL"));
         }
     }
 
