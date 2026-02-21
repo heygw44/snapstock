@@ -141,9 +141,9 @@ class ProductRepositoryTest {
         void 첫_페이지를_조회한다() {
             // given
             productRepository.save(Product.create("상품1", null, 1000, 10, "전자제품"));
-            productRepository.save(Product.create("상품2", null, 2000, 20, "의류"));
-            productRepository.save(Product.create("상품3", null, 3000, 30, "전자제품"));
-            productRepository.save(Product.create("상품4", null, 4000, 40, "의류"));
+            Product p2 = productRepository.save(Product.create("상품2", null, 2000, 20, "의류"));
+            Product p3 = productRepository.save(Product.create("상품3", null, 3000, 30, "전자제품"));
+            Product p4 = productRepository.save(Product.create("상품4", null, 4000, 40, "의류"));
 
             // when
             List<Product> result = productRepository
@@ -151,6 +151,8 @@ class ProductRepositoryTest {
 
             // then
             assertThat(result).hasSize(3);
+            assertThat(result).extracting(Product::getId)
+                    .containsExactly(p4.getId(), p3.getId(), p2.getId());
         }
     }
 

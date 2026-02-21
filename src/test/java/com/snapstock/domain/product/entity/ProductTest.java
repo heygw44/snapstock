@@ -3,7 +3,10 @@ package com.snapstock.domain.product.entity;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ProductTest {
 
@@ -31,6 +34,22 @@ class ProductTest {
             // then
             assertThat(product.getDeletedAt()).isNull();
         }
+
+        @Test
+        void 음수_가격이면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> Product.create("상품A", "설명", -1, 50, "전자제품"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("가격은 0 이상이어야 합니다.");
+        }
+
+        @Test
+        void 음수_재고이면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> Product.create("상품A", "설명", 10000, -1, "전자제품"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("재고는 0 이상이어야 합니다.");
+        }
     }
 
     @Nested
@@ -51,6 +70,28 @@ class ProductTest {
             assertThat(product.getStock()).isEqualTo(100);
             assertThat(product.getCategory()).isEqualTo("의류");
         }
+
+        @Test
+        void 음수_가격으로_수정하면_예외가_발생한다() {
+            // given
+            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+
+            // when & then
+            assertThatThrownBy(() -> product.update("상품B", "새 설명", -1, 100, "의류"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("가격은 0 이상이어야 합니다.");
+        }
+
+        @Test
+        void 음수_재고로_수정하면_예외가_발생한다() {
+            // given
+            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+
+            // when & then
+            assertThatThrownBy(() -> product.update("상품B", "새 설명", 20000, -1, "의류"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("재고는 0 이상이어야 합니다.");
+        }
     }
 
     @Nested
@@ -66,6 +107,20 @@ class ProductTest {
 
             // then
             assertThat(product.getDeletedAt()).isNotNull();
+        }
+
+        @Test
+        void 이미_삭제된_상품은_deletedAt이_변경되지_않는다() {
+            // given
+            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+            product.softDelete();
+            LocalDateTime firstDeletedAt = product.getDeletedAt();
+
+            // when
+            product.softDelete();
+
+            // then
+            assertThat(product.getDeletedAt()).isEqualTo(firstDeletedAt);
         }
 
         @Test

@@ -47,6 +47,8 @@ public class Product extends BaseEntity {
 
     private Product(String name, String description, int originalPrice,
                     int stock, String category) {
+        validatePrice(originalPrice);
+        validateStock(stock);
         this.name = name;
         this.description = description;
         this.originalPrice = originalPrice;
@@ -61,6 +63,8 @@ public class Product extends BaseEntity {
 
     public void update(String name, String description, int originalPrice,
                        int stock, String category) {
+        validatePrice(originalPrice);
+        validateStock(stock);
         this.name = name;
         this.description = description;
         this.originalPrice = originalPrice;
@@ -69,10 +73,25 @@ public class Product extends BaseEntity {
     }
 
     public void softDelete() {
+        if (this.deletedAt != null) {
+            return;
+        }
         this.deletedAt = LocalDateTime.now();
     }
 
     public boolean isDeleted() {
         return this.deletedAt != null;
+    }
+
+    private static void validatePrice(int price) {
+        if (price < 0) {
+            throw new IllegalArgumentException("가격은 0 이상이어야 합니다.");
+        }
+    }
+
+    private static void validateStock(int stock) {
+        if (stock < 0) {
+            throw new IllegalArgumentException("재고는 0 이상이어야 합니다.");
+        }
     }
 }
