@@ -4,6 +4,7 @@ import com.snapstock.domain.product.dto.ProductCreateRequest;
 import com.snapstock.domain.product.dto.ProductResponse;
 import com.snapstock.domain.product.dto.ProductUpdateRequest;
 import com.snapstock.domain.product.entity.Product;
+import com.snapstock.domain.product.entity.ProductCommand;
 import com.snapstock.domain.product.repository.ProductRepository;
 import com.snapstock.global.error.CustomException;
 import com.snapstock.global.error.ErrorCode;
@@ -42,8 +43,8 @@ class ProductServiceTest {
     private ProductService productService;
 
     private Product createTestProduct() {
-        Product product = Product.create(
-                PRODUCT_NAME, PRODUCT_DESCRIPTION, ORIGINAL_PRICE, STOCK, CATEGORY);
+        Product product = Product.create(new ProductCommand(
+                PRODUCT_NAME, PRODUCT_DESCRIPTION, ORIGINAL_PRICE, STOCK, CATEGORY));
         ReflectionTestUtils.setField(product, "id", PRODUCT_ID);
         ReflectionTestUtils.setField(product, "createdAt", LocalDateTime.now());
         return product;
@@ -82,7 +83,9 @@ class ProductServiceTest {
 
             // when & then
             assertThatThrownBy(() -> productService.createProduct(request))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(CustomException.class)
+                    .satisfies(ex -> assertThat(((CustomException) ex).getErrorCode())
+                            .isEqualTo(ErrorCode.INVALID_INPUT));
             then(productRepository).should(never()).save(any(Product.class));
         }
     }

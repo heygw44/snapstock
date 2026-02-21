@@ -22,8 +22,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
-    private static final int NAME_MAX_LENGTH = 255;
-    private static final int CATEGORY_MAX_LENGTH = 100;
+    public static final int NAME_MAX_LENGTH = 255;
+    public static final int CATEGORY_MAX_LENGTH = 100;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,35 +46,16 @@ public class Product extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    private Product(String name, String description, Integer originalPrice,
-                    Integer stock, String category) {
-        validateName(name);
-        validateCategory(category);
-        validatePrice(originalPrice);
-        validateStock(stock);
-        this.name = name;
-        this.description = description;
-        this.originalPrice = originalPrice;
-        this.stock = stock;
-        this.category = category;
+    private Product(ProductCommand command) {
+        applyCommand(command);
     }
 
-    public static Product create(String name, String description, Integer originalPrice,
-                                  Integer stock, String category) {
-        return new Product(name, description, originalPrice, stock, category);
+    public static Product create(ProductCommand command) {
+        return new Product(command);
     }
 
-    public void update(String name, String description, Integer originalPrice,
-                       Integer stock, String category) {
-        validateName(name);
-        validateCategory(category);
-        validatePrice(originalPrice);
-        validateStock(stock);
-        this.name = name;
-        this.description = description;
-        this.originalPrice = originalPrice;
-        this.stock = stock;
-        this.category = category;
+    public void update(ProductCommand command) {
+        applyCommand(command);
     }
 
     public void softDelete() {
@@ -86,6 +67,18 @@ public class Product extends BaseEntity {
 
     public boolean isDeleted() {
         return this.deletedAt != null;
+    }
+
+    private void applyCommand(ProductCommand command) {
+        validateName(command.name());
+        validateCategory(command.category());
+        validatePrice(command.originalPrice());
+        validateStock(command.stock());
+        this.name = command.name();
+        this.description = command.description();
+        this.originalPrice = command.originalPrice();
+        this.stock = command.stock();
+        this.category = command.category();
     }
 
     private static void validateName(String name) {
@@ -109,13 +102,19 @@ public class Product extends BaseEntity {
     }
 
     private static void validatePrice(Integer price) {
-        if (price == null || price <= 0) {
+        if (price == null) {
+            throw new IllegalArgumentException("가격은 필수입니다.");
+        }
+        if (price <= 0) {
             throw new IllegalArgumentException("가격은 0보다 커야 합니다.");
         }
     }
 
     private static void validateStock(Integer stock) {
-        if (stock == null || stock < 0) {
+        if (stock == null) {
+            throw new IllegalArgumentException("재고는 필수입니다.");
+        }
+        if (stock < 0) {
             throw new IllegalArgumentException("재고는 0 이상이어야 합니다.");
         }
     }

@@ -1,5 +1,6 @@
 package com.snapstock.domain.product.dto;
 
+import com.snapstock.domain.product.entity.Product;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -8,7 +9,7 @@ import jakarta.validation.constraints.Size;
 
 public record ProductCreateRequest(
         @NotBlank(message = "상품명은 필수입니다.")
-        @Size(max = ProductCreateRequest.NAME_MAX_LENGTH, message = "상품명은 {max}자 이하여야 합니다.")
+        @Size(max = Product.NAME_MAX_LENGTH, message = "상품명은 {max}자 이하여야 합니다.")
         String name,
 
         String description,
@@ -21,10 +22,7 @@ public record ProductCreateRequest(
         int stock,
 
         @NotBlank(message = "카테고리는 필수입니다.")
-        @Size(max = ProductCreateRequest.CATEGORY_MAX_LENGTH, message = "카테고리는 {max}자 이하여야 합니다.")
+        @Size(max = Product.CATEGORY_MAX_LENGTH, message = "카테고리는 {max}자 이하여야 합니다.")
         String category
 ) {
-
-    private static final int NAME_MAX_LENGTH = 255;
-    private static final int CATEGORY_MAX_LENGTH = 100;
 }
