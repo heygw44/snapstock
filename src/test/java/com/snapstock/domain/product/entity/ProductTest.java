@@ -36,11 +36,19 @@ class ProductTest {
         }
 
         @Test
+        void 가격이_0이면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> Product.create("상품A", "설명", 0, 50, "전자제품"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("가격은 0보다 커야 합니다.");
+        }
+
+        @Test
         void 음수_가격이면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(() -> Product.create("상품A", "설명", -1, 50, "전자제품"))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("가격은 0 이상이어야 합니다.");
+                    .hasMessage("가격은 0보다 커야 합니다.");
         }
 
         @Test
@@ -49,6 +57,38 @@ class ProductTest {
             assertThatThrownBy(() -> Product.create("상품A", "설명", 10000, -1, "전자제품"))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("재고는 0 이상이어야 합니다.");
+        }
+
+        @Test
+        void 상품명이_null이면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> Product.create(null, "설명", 10000, 50, "전자제품"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("상품명은 필수입니다.");
+        }
+
+        @Test
+        void 상품명이_빈값이면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> Product.create("  ", "설명", 10000, 50, "전자제품"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("상품명은 필수입니다.");
+        }
+
+        @Test
+        void 카테고리가_null이면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> Product.create("상품A", "설명", 10000, 50, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("카테고리는 필수입니다.");
+        }
+
+        @Test
+        void 카테고리가_빈값이면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> Product.create("상품A", "설명", 10000, 50, ""))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("카테고리는 필수입니다.");
         }
     }
 
@@ -72,6 +112,17 @@ class ProductTest {
         }
 
         @Test
+        void 가격0으로_수정하면_예외가_발생한다() {
+            // given
+            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+
+            // when & then
+            assertThatThrownBy(() -> product.update("상품B", "새 설명", 0, 100, "의류"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("가격은 0보다 커야 합니다.");
+        }
+
+        @Test
         void 음수_가격으로_수정하면_예외가_발생한다() {
             // given
             Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
@@ -79,7 +130,7 @@ class ProductTest {
             // when & then
             assertThatThrownBy(() -> product.update("상품B", "새 설명", -1, 100, "의류"))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("가격은 0 이상이어야 합니다.");
+                    .hasMessage("가격은 0보다 커야 합니다.");
         }
 
         @Test
@@ -91,6 +142,50 @@ class ProductTest {
             assertThatThrownBy(() -> product.update("상품B", "새 설명", 20000, -1, "의류"))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("재고는 0 이상이어야 합니다.");
+        }
+
+        @Test
+        void 상품명null로_수정하면_예외가_발생한다() {
+            // given
+            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+
+            // when & then
+            assertThatThrownBy(() -> product.update(null, "새 설명", 20000, 100, "의류"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("상품명은 필수입니다.");
+        }
+
+        @Test
+        void 상품명빈값으로_수정하면_예외가_발생한다() {
+            // given
+            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+
+            // when & then
+            assertThatThrownBy(() -> product.update("  ", "새 설명", 20000, 100, "의류"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("상품명은 필수입니다.");
+        }
+
+        @Test
+        void 카테고리null로_수정하면_예외가_발생한다() {
+            // given
+            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+
+            // when & then
+            assertThatThrownBy(() -> product.update("상품B", "새 설명", 20000, 100, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("카테고리는 필수입니다.");
+        }
+
+        @Test
+        void 카테고리빈값으로_수정하면_예외가_발생한다() {
+            // given
+            Product product = Product.create("상품A", "설명", 10000, 50, "전자제품");
+
+            // when & then
+            assertThatThrownBy(() -> product.update("상품B", "새 설명", 20000, 100, ""))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("카테고리는 필수입니다.");
         }
     }
 
